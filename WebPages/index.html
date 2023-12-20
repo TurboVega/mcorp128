@@ -1,0 +1,42 @@
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="index.html">Home</a></td></tr>
+	<tr><td><a href="registers.html">Registers</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="instlist.html">Instructions (opcode)</a></td></tr>
+	<tr><td><a href="instlista.html">Instructions (alpha)</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="assembler.html">Program Assembler</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>MCORP128</h1>
+	<p><b>M</b>y <b>C</b>ustom <b>O</b>verlaid-<b>R</b>egister <b>P</b>rocessor</br></p>
+    <ul>
+    <li>128 bytes of internal general-purpose register storage</li>
+    <li>instructions can process numbers up to 128 bits wide</li>
+    </ul>
+	<p>&nbsp;</p>
+	<p>These web pages describe the operation of my custom CPU, which can be implemented in HDL code
+    (VHDL or Verilog), and synthesized into an FPGA.
+    This is not a RISC CPU. It has some complex instructions, and instruction lengths (in bytes) vary.</p>
+    <p>The CPU has 128 byte-wide general-purpose <a href="registers.html">registers</a>.
+    These are overlaid with 64 half-word-wide registers, 32 word-wide registers,
+    16 double-word-wide registers, and
+    8 quad-word-wide registers.
+    Thus, the CPU can operate on 8-bit, 16-bit, 32-bit, 64-bit, or 128-bit numbers.</p>
+    <p>Details of the memory layout, I/O system, and interrupt handling are incomplete at present, and thus, TBD.</p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

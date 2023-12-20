@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="popf.html">POPF</a></td></tr>
+	<tr><td><a href="pushf.html">PUSHF</a></td></tr>
+	<tr><td><a href="popb.html">POPB</a></td></tr>
+	<tr><td><a href="pushb.html">PUSHB</a></td></tr>
+	<tr><td><a href="popd.html">POPD</a></td></tr>
+	<tr><td><a href="pushd.html">PUSHD</a></td></tr>
+	<tr><td><a href="poph.html">POPH</a></td></tr>
+	<tr><td><a href="pushh.html">PUSHH</a></td></tr>
+	<tr><td><a href="popw.html">POPW</a></td></tr>
+	<tr><td><a href="pushw.html">PUSHW</a></td></tr>
+	<tr><td><a href="popq.html">POPQ</a></td></tr>
+	<tr><td><a href="pushq.html">PUSHQ</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>POPB Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction pops a range of registers off of the stack that were (typically) pushed as byte values.
+    Since stack elements are 16-bits wide, half-word values are popped, but only the lower 8-bits are placed
+    into the destination registers. If the specified registers are larger than 8-bits, the resulting 8-bit values
+    are zero-extended to fill the registers, erasing any prior contents.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">popb rs1sel rs2sel</td>
+			<td class="InstDtlCell">6DH</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>if rs1sel ≤ rs2sel</td></tr>
+					<tr><td>&nbsp;&nbsp;for rssel = rs2sel to rs1sel by -1</td></tr>
+					<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Rs{7:0} ← [SP]; SP ← SP+2</td></tr>
+					<tr><td>&nbsp;&nbsp;endfor</td></tr>
+					<tr><td>else</td></tr>
+					<tr><td>&nbsp;&nbsp;for rssel = rs1sel to rs2sel</td></tr>
+					<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Rs{7:0} ← [SP]; SP ← SP+2</td></tr>
+					<tr><td>&nbsp;&nbsp;endfor</td></tr>
+					<tr><td>endif</td></tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+    <p>'Rs' represents the register referenced by 'rssel'.</p>
+	<p>The first register (referenced by 'rs1sel') must have the same width
+    as the last register (referenced by 'rs2sel'). For example, specify two
+    byte registers or two double-word registers, but not a mix of sizes.</p>
+    <p>The registers are pushed in reverse order. If the given registers are
+    'RB005' and 'RB007', then 'RB007' is pushed first, followed by 'RB006', then
+    'RB005'. Thus, the value from 'RB005' will be pointed to by the SP register,
+    after all pushes take place. If you want the opposite order, then reverse
+    the two register parameters in the instruction.</p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

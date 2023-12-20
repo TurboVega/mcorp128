@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="clrc.html">CLRC</a></td></tr>
+	<tr><td><a href="clrfe.html">CLRFE</a></td></tr>
+	<tr><td><a href="clrge.html">CLRGE</a></td></tr>
+	<tr><td><a href="clrhe.html">CLRHE</a></td></tr>
+	<tr><td><a href="clrie.html">CLRIE</a></td></tr>
+	<tr><td><a href="clrint.html">CLRINT</a></td></tr>
+	<tr><td><a href="clrn.html">CLRN</a></td></tr>
+	<tr><td><a href="clrp.html">CLRP</a></td></tr>
+	<tr><td><a href="clrse.html">CLRSE</a></td></tr>
+	<tr><td><a href="clrv.html">CLRV</a></td></tr>
+	<tr><td><a href="clrz.html">CLRZ</a></td></tr>
+	<tr><td><a href="setc.html">SETC</a></td></tr>
+	<tr><td><a href="setfe.html">SETFE</a></td></tr>
+	<tr><td><a href="setge.html">SETGE</a></td></tr>
+	<tr><td><a href="sethe.html">SETHE</a></td></tr>
+	<tr><td><a href="setie.html">SETIE</a></td></tr>
+	<tr><td><a href="setint.html">SETINT</a></td></tr>
+	<tr><td><a href="setn.html">SETN</a></td></tr>
+	<tr><td><a href="setp.html">SETP</a></td></tr>
+	<tr><td><a href="setse.html">SETSE</a></td></tr>
+	<tr><td><a href="setv.html">SETV</a></td></tr>
+	<tr><td><a href="setz.html">SETZ</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>SETIE Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction sets the IE {slow interrupt enable} flag in the flags register.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">INH</td>
+			<td class="InstDtlCell">setie</td>
+			<td class="InstDtlCell">0FH</td>
+			<td class="InstDtlCell">IE ← 1</td>
+		</tr>
+	</table>
+	<p></p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">1</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

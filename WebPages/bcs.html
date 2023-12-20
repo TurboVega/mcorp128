@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="bcc.html">BCC/BNL</a></td></tr>
+	<tr><td><a href="bcs.html">BCS/BLO</a></td></tr>
+	<tr><td><a href="beq.html">BEQ</a></td></tr>
+	<tr><td><a href="bfc.html">BFC</a></td></tr>
+	<tr><td><a href="bfs.html">BFS</a></td></tr>
+	<tr><td><a href="bgc.html">BGC</a></td></tr>
+	<tr><td><a href="bge.html">BGE</a></td></tr>
+	<tr><td><a href="bgs.html">BGS</a></td></tr>
+	<tr><td><a href="bgt.html">BGT</a></td></tr>
+	<tr><td><a href="bhc.html">BHC</a></td></tr>
+	<tr><td><a href="bhi.html">BHI</a></td></tr>
+	<tr><td><a href="bhs.html">BHS</a></td></tr>
+	<tr><td><a href="bic.html">BIC</a></td></tr>
+	<tr><td><a href="bis.html">BIS</a></td></tr>
+	<tr><td><a href="ble.html">BLE</a></td></tr>
+	<tr><td><a href="bls.html">BLS/BNH</a></td></tr>
+	<tr><td><a href="blt.html">BLT</a></td></tr>
+	<tr><td><a href="bmi.html">BMI</a></td></tr>
+	<tr><td><a href="bne.html">BNE</a></td></tr>
+	<tr><td><a href="bnm.html">BNM/BPZ</a></td></tr>
+	<tr><td><a href="bnp.html">BNP/BMZ</a></td></tr>
+	<tr><td><a href="bpl.html">BPL</a></td></tr>
+	<tr><td><a href="bra.html">BRA/JMP</a></td></tr>
+	<tr><td><a href="brn.html">BRN</a></td></tr>
+	<tr><td><a href="bsr.html">BSR/JSR</a></td></tr>
+	<tr><td><a href="bvc.html">BVC/BNO</a></td></tr>
+	<tr><td><a href="bvs.html">BVS/BOV</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>Branch Carry Set (BCS) / Branch Lower (BLO) Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction branches to the specified program address, if the C (carry) bit is clear.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">bcs label<br/>blo label</td>
+			<td class="InstDtlCell">2FH offs{07:00}</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>if C<br/>&nbsp;&nbsp;PC ← PC + offs<br/>endif</td></tr>
+				</table>
+			</td>
+			<td class="InstDtlCell">Offset is 8-bits wide.</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">bcs label<br/>blo label</td>
+			<td class="InstDtlCell">4FH offs{07:00} offs{15:08}</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>if C<br/>&nbsp;&nbsp;PC ← PC + offs<br/>endif</td></tr>
+				</table>
+			</td>
+			<td class="InstDtlCell">Offset is 16-bits wide.</td>
+		</tr>
+	</table>
+	<p>Offset ('offs') is a signed value, and is sign-extended to 32-bits before being added to the PC.</p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">?</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

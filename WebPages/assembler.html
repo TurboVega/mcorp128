@@ -1,0 +1,2092 @@
+<!DOCTYPE html> 
+<html> 
+  
+<head> 
+    <title>MCORP128 Instruction Set Assembler</title>
+    <link rel="stylesheet" href="inststyle.css">
+</head> 
+  
+<body style="background-color: #808080">
+    <script type="text/javascript">
+
+var NO_OVERFLOW = 0;
+var OVERFLOW = 1;
+
+var bitsToHex = [];
+bitsToHex['0000'] = '0';
+bitsToHex['0001'] = '1';
+bitsToHex['0010'] = '2';
+bitsToHex['0011'] = '3';
+bitsToHex['0100'] = '4';
+bitsToHex['0101'] = '5';
+bitsToHex['0110'] = '6';
+bitsToHex['0111'] = '7';
+bitsToHex['1000'] = '8';
+bitsToHex['1001'] = '9';
+bitsToHex['1010'] = 'A';
+bitsToHex['1011'] = 'B';
+bitsToHex['1100'] = 'C';
+bitsToHex['1101'] = 'D';
+bitsToHex['1110'] = 'E';
+bitsToHex['1111'] = 'F';
+
+class BigInt
+{
+    constructor(bigint)
+    {
+        this.value = [];
+        for (var i = 0; i < 128; i++)
+        {
+            if (bigint !== undefined && bigint !== null)
+            {
+                this.value[i] = bigint.value[i];
+            }
+            else
+            {
+                this.value.push(0);
+            }
+        }
+    }
+    
+    clear()
+    {
+        for (var i = 0; i < 128; i++)
+        {
+            this.value[i] = 0;
+        }
+    }
+    
+    toString()
+    {
+        var s = '';
+        for (var i = 127; i >= 0; i--)
+        {
+            s += String(this.value[i]);
+        }
+        return s;
+    }
+    
+    toHexString(start, nBytes)
+    {
+        var s = '';
+        var b = start;
+        var i = start * 8;
+        var n = 0;
+        while (b < 16)
+        {
+            if (nBytes !== undefined && nBytes !== null && n >= nBytes)
+            {
+                break;
+            }
+            
+            s += bitsToHex[String(this.value[i+7]) + String(this.value[i+6]) + String(this.value[i+5]) + String(this.value[i+4])];
+            s += bitsToHex[String(this.value[i+3]) + String(this.value[i+2]) + String(this.value[i+1]) + String(this.value[i])];
+
+            b++;
+            i += 8;
+            n++;
+        }
+        return s;
+    }
+    
+    setFromInt(ival)
+    {
+        this.clear();
+        var s = String(ival);
+        if (s[0] == '-')
+        {
+            for (var i = 1; i < s.length; i++)
+            {
+                if (this.appendDecChar(s[i]) == OVERFLOW) return OVERFLOW;
+            }
+            return this.negate();
+        }
+        else
+        {
+            for (var i = 0; i < s.length; i++)
+            {
+                if (this.appendDecChar(s[i]) == OVERFLOW) return OVERFLOW;
+            }
+            return NO_OVERFLOW;
+        }
+    }
+
+    appendBinChar(ch)
+    {
+        return this.appendBinDigit(ch.charCodeAt(0) - 48);
+    }
+    
+    appendOctChar(ch)
+    {
+        return this.appendOctDigit(ch.charCodeAt(0) - 48);
+    }
+    
+    appendDecChar(ch)
+    {
+        return this.appendDecDigit(ch.charCodeAt(0) - 48);
+    }
+    
+    appendHexChar(ch)
+    {
+        ch = ch.toUpperCase();
+        if ((ch >= 'A') && (ch <= 'F'))
+        {
+            return this.appendHexDigit(ch.charCodeAt(0) - 65 + 10);
+        }
+        else
+        {
+            return this.appendHexDigit(ch.charCodeAt(0) - 48);
+        }
+        return 0;
+    }
+    
+    appendBinDigit(digit)
+    {
+        var carry = this.value[127];
+        for (var i = 127; i > 0; i--)
+        {
+            this.value[i] = this.value[i-1];
+        }
+        this.value[0] = digit;
+        return carry;
+    }
+
+    appendOctDigit(digit)
+    {
+        if (this.appendBinDigit((digit & 4) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit((digit & 2) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit((digit & 1) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        return NO_OVERFLOW;
+    }
+
+    appendDecDigit(digit)
+    {
+        var orig = new BigInt(this);
+        if (this.appendBinDigit(0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit(0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit(0) == OVERFLOW) return OVERFLOW;
+        if (this.add(orig) == OVERFLOW) return OVERFLOW;
+        if (this.add(orig) == OVERFLOW) return OVERFLOW;
+        var newDig = new BigInt();
+        if (newDig.appendBinDigit(((digit & 8) != 0) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (newDig.appendBinDigit(((digit & 4) != 0) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (newDig.appendBinDigit(((digit & 2) != 0) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (newDig.appendBinDigit(((digit & 1) != 0) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        return this.add(newDig);
+    }
+
+    appendHexDigit(digit)
+    {
+        if (this.appendBinDigit((digit & 8) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit((digit & 4) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit((digit & 2) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        if (this.appendBinDigit((digit & 1) ? 1 : 0) == OVERFLOW) return OVERFLOW;
+        return NO_OVERFLOW;
+    }
+
+    add(bigint)
+    {
+        var carry = 0;
+        for (var i = 0; i < 128; i++)
+        {
+            this.value[i] += bigint.value[i] + carry;
+            if (this.value[i] > 1)
+            {
+                this.value[i] -= 2;
+                carry = 1;
+            }
+            else
+            {
+                carry = 0;
+            }
+        }
+       return carry;
+    }
+    
+    sub(bigint)
+    {
+        var subtrahend = new BigInt(bigint);
+        subtrahend.negate();
+        return this.add(subtrahend);
+    }
+    
+    isZero()
+    {
+        for (var i = 0; i < 128; i++)
+        {
+            if (this.value[i] != 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    isNegative()
+    {
+        return (this.value[127] != 0);
+    }
+    
+    compare(bigint)
+    {
+        var difference = new BigInt(this);
+        var carry = difference.sub(bigint);
+        if (difference.isZero())
+        {
+            return 0;
+        }
+        return (difference.isNegative() ? -1 : 1);
+    }
+    
+    complement()
+    {
+        for (var i = 0; i < 128; i++)
+        {
+            this.value[i] = 1 - this.value[i];
+        }
+    }
+    
+    increment()
+    {
+        var one = new BigInt();
+        one.appendBinDigit(1);
+        return this.add(one);
+    }
+    
+    negate()
+    {
+        this.complement();
+        return this.increment();
+    }
+    
+    fitsInWidth(width)
+    {
+        var sign = this.value[width - 1];
+        for (var i = width; i < 128; i++)
+        {
+            if (this.value[i] !== sign)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+var TokenType =
+{
+    NONE: '',
+    ERROR: 'E',
+    COMMENT: ';',
+    SPACE: '-',
+    IDENT: 'I',
+    COMMA: ',',
+    POUND: '#',
+    LBRACKET: '[',
+    RBRACKET: ']',
+    NUMBER: 'N',
+    STRING: 'S'
+};
+
+var reg_names =
+[{ reg:'RB000', code:'00' },
+{ reg:'RB001', code:'01' },
+{ reg:'RB002', code:'02' },
+{ reg:'RB003', code:'03' },
+{ reg:'RB004', code:'04' },
+{ reg:'RB005', code:'05' },
+{ reg:'RB006', code:'06' },
+{ reg:'RB007', code:'07' },
+{ reg:'RB008', code:'08' },
+{ reg:'RB009', code:'09' },
+{ reg:'RB010', code:'0A' },
+{ reg:'RB011', code:'0B' },
+{ reg:'RB012', code:'0C' },
+{ reg:'RB013', code:'0D' },
+{ reg:'RB014', code:'0E' },
+{ reg:'RB015', code:'0F' },
+{ reg:'RB016', code:'10' },
+{ reg:'RB017', code:'11' },
+{ reg:'RB018', code:'12' },
+{ reg:'RB019', code:'13' },
+{ reg:'RB020', code:'14' },
+{ reg:'RB021', code:'15' },
+{ reg:'RB022', code:'16' },
+{ reg:'RB023', code:'17' },
+{ reg:'RB024', code:'18' },
+{ reg:'RB025', code:'19' },
+{ reg:'RB026', code:'1A' },
+{ reg:'RB027', code:'1B' },
+{ reg:'RB028', code:'1C' },
+{ reg:'RB029', code:'1D' },
+{ reg:'RB030', code:'1E' },
+{ reg:'RB031', code:'1F' },
+{ reg:'RB032', code:'20' },
+{ reg:'RB033', code:'21' },
+{ reg:'RB034', code:'22' },
+{ reg:'RB035', code:'23' },
+{ reg:'RB036', code:'24' },
+{ reg:'RB037', code:'25' },
+{ reg:'RB038', code:'26' },
+{ reg:'RB039', code:'27' },
+{ reg:'RB040', code:'28' },
+{ reg:'RB041', code:'29' },
+{ reg:'RB042', code:'2A' },
+{ reg:'RB043', code:'2B' },
+{ reg:'RB044', code:'2C' },
+{ reg:'RB045', code:'2D' },
+{ reg:'RB046', code:'2E' },
+{ reg:'RB047', code:'2F' },
+{ reg:'RB048', code:'30' },
+{ reg:'RB049', code:'31' },
+{ reg:'RB050', code:'32' },
+{ reg:'RB051', code:'33' },
+{ reg:'RB052', code:'34' },
+{ reg:'RB053', code:'35' },
+{ reg:'RB054', code:'36' },
+{ reg:'RB055', code:'37' },
+{ reg:'RB056', code:'38' },
+{ reg:'RB057', code:'39' },
+{ reg:'RB058', code:'3A' },
+{ reg:'RB059', code:'3B' },
+{ reg:'RB060', code:'3C' },
+{ reg:'RB061', code:'3D' },
+{ reg:'RB062', code:'3E' },
+{ reg:'RB063', code:'3F' },
+{ reg:'RB064', code:'40' },
+{ reg:'RB065', code:'41' },
+{ reg:'RB066', code:'42' },
+{ reg:'RB067', code:'43' },
+{ reg:'RB068', code:'44' },
+{ reg:'RB069', code:'45' },
+{ reg:'RB070', code:'46' },
+{ reg:'RB071', code:'47' },
+{ reg:'RB072', code:'48' },
+{ reg:'RB073', code:'49' },
+{ reg:'RB074', code:'4A' },
+{ reg:'RB075', code:'4B' },
+{ reg:'RB076', code:'4C' },
+{ reg:'RB077', code:'4D' },
+{ reg:'RB078', code:'4E' },
+{ reg:'RB079', code:'4F' },
+{ reg:'RB080', code:'50' },
+{ reg:'RB081', code:'51' },
+{ reg:'RB082', code:'52' },
+{ reg:'RB083', code:'53' },
+{ reg:'RB084', code:'54' },
+{ reg:'RB085', code:'55' },
+{ reg:'RB086', code:'56' },
+{ reg:'RB087', code:'57' },
+{ reg:'RB088', code:'58' },
+{ reg:'RB089', code:'59' },
+{ reg:'RB090', code:'5A' },
+{ reg:'RB091', code:'5B' },
+{ reg:'RB092', code:'5C' },
+{ reg:'RB093', code:'5D' },
+{ reg:'RB094', code:'5E' },
+{ reg:'RB095', code:'5F' },
+{ reg:'RB096', code:'60' },
+{ reg:'RB097', code:'61' },
+{ reg:'RB098', code:'62' },
+{ reg:'RB099', code:'63' },
+{ reg:'RB100', code:'64' },
+{ reg:'RB101', code:'65' },
+{ reg:'RB102', code:'66' },
+{ reg:'RB103', code:'67' },
+{ reg:'RB104', code:'68' },
+{ reg:'RB105', code:'69' },
+{ reg:'RB106', code:'6A' },
+{ reg:'RB107', code:'6B' },
+{ reg:'RB108', code:'6C' },
+{ reg:'RB109', code:'6D' },
+{ reg:'RB110', code:'6E' },
+{ reg:'RB111', code:'6F' },
+{ reg:'RB112', code:'70' },
+{ reg:'RB113', code:'71' },
+{ reg:'RB114', code:'72' },
+{ reg:'RB115', code:'73' },
+{ reg:'RB116', code:'74' },
+{ reg:'RB117', code:'75' },
+{ reg:'RB118', code:'76' },
+{ reg:'RB119', code:'77' },
+{ reg:'RB120', code:'78' },
+{ reg:'RB121', code:'79' },
+{ reg:'RB122', code:'7A' },
+{ reg:'RB123', code:'7B' },
+{ reg:'RB124', code:'7C' },
+{ reg:'RB125', code:'7D' },
+{ reg:'RB126', code:'7E' },
+{ reg:'RB127', code:'7F' },
+{ reg:'RD00', code:'E0' },
+{ reg:'RD01', code:'E1' },
+{ reg:'RD02', code:'E2' },
+{ reg:'RD03', code:'E3' },
+{ reg:'RD04', code:'E4' },
+{ reg:'RD05', code:'E5' },
+{ reg:'RD06', code:'E6' },
+{ reg:'RD07', code:'E7' },
+{ reg:'RD08', code:'E8' },
+{ reg:'RD09', code:'E9' },
+{ reg:'RD10', code:'EA' },
+{ reg:'RD11', code:'EB' },
+{ reg:'RD12', code:'EC' },
+{ reg:'RD13', code:'ED' },
+{ reg:'RD14', code:'EE' },
+{ reg:'RD15', code:'EF' },
+{ reg:'RH00', code:'80' },
+{ reg:'RH01', code:'81' },
+{ reg:'RH02', code:'82' },
+{ reg:'RH03', code:'83' },
+{ reg:'RH04', code:'84' },
+{ reg:'RH05', code:'85' },
+{ reg:'RH06', code:'86' },
+{ reg:'RH07', code:'87' },
+{ reg:'RH08', code:'88' },
+{ reg:'RH09', code:'89' },
+{ reg:'RH10', code:'8A' },
+{ reg:'RH11', code:'8B' },
+{ reg:'RH12', code:'8C' },
+{ reg:'RH13', code:'8D' },
+{ reg:'RH14', code:'8E' },
+{ reg:'RH15', code:'8F' },
+{ reg:'RH16', code:'90' },
+{ reg:'RH17', code:'91' },
+{ reg:'RH18', code:'92' },
+{ reg:'RH19', code:'93' },
+{ reg:'RH20', code:'94' },
+{ reg:'RH21', code:'95' },
+{ reg:'RH22', code:'96' },
+{ reg:'RH23', code:'97' },
+{ reg:'RH24', code:'98' },
+{ reg:'RH25', code:'99' },
+{ reg:'RH26', code:'9A' },
+{ reg:'RH27', code:'9B' },
+{ reg:'RH28', code:'9C' },
+{ reg:'RH29', code:'9D' },
+{ reg:'RH30', code:'9E' },
+{ reg:'RH31', code:'9F' },
+{ reg:'RH32', code:'A0' },
+{ reg:'RH33', code:'A1' },
+{ reg:'RH34', code:'A2' },
+{ reg:'RH35', code:'A3' },
+{ reg:'RH36', code:'A4' },
+{ reg:'RH37', code:'A5' },
+{ reg:'RH38', code:'A6' },
+{ reg:'RH39', code:'A7' },
+{ reg:'RH40', code:'A8' },
+{ reg:'RH41', code:'A9' },
+{ reg:'RH42', code:'AA' },
+{ reg:'RH43', code:'AB' },
+{ reg:'RH44', code:'AC' },
+{ reg:'RH45', code:'AD' },
+{ reg:'RH46', code:'AE' },
+{ reg:'RH47', code:'AF' },
+{ reg:'RH48', code:'B0' },
+{ reg:'RH49', code:'B1' },
+{ reg:'RH50', code:'B2' },
+{ reg:'RH51', code:'B3' },
+{ reg:'RH52', code:'B4' },
+{ reg:'RH53', code:'B5' },
+{ reg:'RH54', code:'B6' },
+{ reg:'RH55', code:'B7' },
+{ reg:'RH56', code:'B8' },
+{ reg:'RH57', code:'B9' },
+{ reg:'RH58', code:'BA' },
+{ reg:'RH59', code:'BB' },
+{ reg:'RH60', code:'BC' },
+{ reg:'RH61', code:'BD' },
+{ reg:'RH62', code:'BE' },
+{ reg:'RH63', code:'BF' },
+{ reg:'RQ0', code:'F0' },
+{ reg:'RQ1', code:'F1' },
+{ reg:'RQ2', code:'F2' },
+{ reg:'RQ3', code:'F3' },
+{ reg:'RQ4', code:'F4' },
+{ reg:'RQ5', code:'F5' },
+{ reg:'RQ6', code:'F6' },
+{ reg:'RQ7', code:'F7' },
+{ reg:'RW00', code:'C0' },
+{ reg:'RW01', code:'C1' },
+{ reg:'RW02', code:'C2' },
+{ reg:'RW03', code:'C3' },
+{ reg:'RW04', code:'C4' },
+{ reg:'RW05', code:'C5' },
+{ reg:'RW06', code:'C6' },
+{ reg:'RW07', code:'C7' },
+{ reg:'RW08', code:'C8' },
+{ reg:'RW09', code:'C9' },
+{ reg:'RW10', code:'CA' },
+{ reg:'RW11', code:'CB' },
+{ reg:'RW12', code:'CC' },
+{ reg:'RW13', code:'CD' },
+{ reg:'RW14', code:'CE' },
+{ reg:'RW15', code:'CF' },
+{ reg:'RW16', code:'D0' },
+{ reg:'RW17', code:'D1' },
+{ reg:'RW18', code:'D2' },
+{ reg:'RW19', code:'D3' },
+{ reg:'RW20', code:'D4' },
+{ reg:'RW21', code:'D5' },
+{ reg:'RW22', code:'D6' },
+{ reg:'RW23', code:'D7' },
+{ reg:'RW24', code:'D8' },
+{ reg:'RW25', code:'D9' },
+{ reg:'RW26', code:'DA' },
+{ reg:'RW27', code:'DB' },
+{ reg:'RW28', code:'DC' },
+{ reg:'RW29', code:'DD' },
+{ reg:'RW30', code:'DE' },
+{ reg:'RW31', code:'DF' }];
+
+var inh_opcodes =
+[{opcode:'00', instr:'clrz'},
+{opcode:'01', instr:'clrn'},
+{opcode:'02', instr:'clrc'},
+{opcode:'03', instr:'clrv'},
+{opcode:'04', instr:'clrie'},
+{opcode:'05', instr:'clrfe'},
+{opcode:'06', instr:'clrge'},
+{opcode:'07', instr:'clrhe'},
+{opcode:'08', instr:'clrint'},
+{opcode:'09', instr:'clrp'},
+{opcode:'0A', instr:'clrse'},
+{opcode:'0B', instr:'setz'},
+{opcode:'0C', instr:'setn'},
+{opcode:'0D', instr:'setc'},
+{opcode:'0E', instr:'setv'},
+{opcode:'0F', instr:'setie'},
+{opcode:'10', instr:'setfe'},
+{opcode:'11', instr:'setge'},
+{opcode:'12', instr:'sethe'},
+{opcode:'13', instr:'setint'},
+{opcode:'14', instr:'setp'},
+{opcode:'15', instr:'setse'},
+{opcode:'16', instr:'nop'},
+{opcode:'17', instr:'pushf'},
+{opcode:'18', instr:'popf'},
+{opcode:'19', instr:'ret'},
+{opcode:'1A', instr:'reti'},
+{opcode:'1B', instr:'retf'},
+{opcode:'1C', instr:'retg'},
+{opcode:'1D', instr:'rets'},
+{opcode:'1E', instr:'retn'},
+{opcode:'1F', instr:'reth'}];
+
+var rel_opcodes =
+[{opcode:'20', opcode2:'40', instr:'bra'},
+{opcode:'21', opcode2:'41', instr:'brn'},
+{opcode:'22', opcode2:'42', instr:'ble'},
+{opcode:'23', opcode2:'43', instr:'blt'},
+{opcode:'24', opcode2:'44', instr:'beq'},
+{opcode:'25', opcode2:'45', instr:'bne'},
+{opcode:'26', opcode2:'46', instr:'bge'},
+{opcode:'27', opcode2:'47', instr:'bgt'},
+{opcode:'28', opcode2:'48', instr:'bhi'},
+{opcode:'29', opcode2:'49', instr:['bls','bnh']},
+{opcode:'2A', opcode2:'4A', instr:'bpl'},
+{opcode:'2B', opcode2:'4B', instr:['bnp','bmz']},
+{opcode:'2C', opcode2:'4C', instr:'bmi'},
+{opcode:'2D', opcode2:'4D', instr:['bnm','bpz']},
+{opcode:'2E', opcode2:'4E', instr:['bcc','bnl']},
+{opcode:'2F', opcode2:'4F', instr:['bcs','blo']},
+{opcode:'30', opcode2:'50', instr:['bvc','bno']},
+{opcode:'31', opcode2:'51', instr:['bvs','bov']},
+{opcode:'32', opcode2:'52', instr:'bic'},
+{opcode:'33', opcode2:'53', instr:'bis'},
+{opcode:'34', opcode2:'54', instr:'bfc'},
+{opcode:'35', opcode2:'55', instr:'bfs'},
+{opcode:'36', opcode2:'56', instr:'bgc'},
+{opcode:'37', opcode2:'57', instr:'bgs'},
+{opcode:'38', opcode2:'58', instr:'bhc'},
+{opcode:'39', opcode2:'59', instr:'bhs'},
+{opcode:'3A', opcode2:'5A', instr:'bsr'}];
+
+var reg_opcodes =
+[{opcode:'60', instr:'neg', reg:'Rd'},
+{opcode:'61', instr:'inc', reg:'Rd'},
+{opcode:'62', instr:'dec', reg:'Rd'},
+{opcode:'63', instr:'rev', reg:'Rd'},
+{opcode:'64', instr:'sxt', reg:'Rd'},
+{opcode:'65', instr:'zxt', reg:'Rd'},
+{opcode:'66', instr:'oxt', reg:'Rd'},
+{opcode:'67', instr:'loz', reg:'Rd'},
+{opcode:'68', instr:'loo', reg:'Rd'},
+{opcode:'69', instr:'hiz', reg:'Rd'},
+{opcode:'6A', instr:'hio', reg:'Rd'},
+{opcode:'6B', instr:'inv', reg:'Rd'},
+{opcode:'76', instr:'fill', reg:'Rd'},
+{opcode:'77', instr:'clr', reg:'Rd'},
+{opcode:'78', instr:'test', reg:'Rs'},
+{opcode:'79', instr:'jsr', reg:'Rs'},
+{opcode:'7A', instr:'jsr', reg:'[Rs]'},
+{opcode:'7B', instr:'jmp', reg:'Rs'},
+{opcode:'7C', instr:'jmp', reg:'[Rs]'}];
+
+var reg_imm_opcodes =
+[{opcode2:'A2', instr: 'sub', reg:'SP', data:'#val'},
+{opcode2:'A3', instr: 'add', reg:'SP', data:'#val'},
+{opcode:'80', instr:'setbit', reg:'Rd', data:'#bit'},
+{opcode:'81', instr: 'clrbit', reg:'Rd', data:'#bit'},
+{opcode:'82', instr: 'invbit', reg:'Rd', data:'#bit'},
+{opcode:'83', instr: 'testbit', reg:'Rs', data:'#bit'},
+{opcode:'84', opcode2:'A4', instr: 'add', reg:'Rd', data:'#val'},
+{opcode:'85', opcode2:'A5', instr: 'addc', reg:'Rd', data:'#val'},
+{opcode:'86', opcode2:'A6', instr: 'sub', reg:'Rd', data:'#val'},
+{opcode:'87', opcode2:'A7', instr: 'subb', reg:'Rd', data:'#val'},
+{opcode:'88', opcode2:'A8', instr: 'umul', reg:'Rd', data:'#val'},
+{opcode:'89', opcode2:'A9', instr: 'smul', reg:'Rd', data:'#val'},
+{opcode:'8A', opcode2:'AA', instr: 'udiv', reg:'Rd', data:'#val'},
+{opcode:'8B', opcode2:'AB', instr: 'sdiv', reg:'Rd', data:'#val'},
+{opcode2:'AC', instr: 'and', reg:'Rd', data:'#val'},
+{opcode2:'AD', instr: 'or', reg:'Rd', data:'#val'},
+{opcode2:'AE', instr: 'xor', reg:'Rd', data:'#val'},
+{opcode2:'AF', instr: 'nand', reg:'Rd', data:'#val'},
+{opcode2:'B0', instr: 'nor', reg:'Rd', data:'#val'},
+{opcode:'91', instr: 'asr', reg:'Rd', data:'#cnt'},
+{opcode:'92', instr: 'shl', reg:'Rd', data:'#cnt'},
+{opcode:'93', instr: 'shr', reg:'Rd', data:'#cnt'},
+{opcode:'94', instr: 'rol', reg:'Rd', data:'#cnt'},
+{opcode:'95', instr: 'ror', reg:'Rd', data:'#cnt'},
+{opcode:'96', instr: 'rcl', reg:'Rd', data:'#cnt'},
+{opcode:'97', instr: 'rcr', reg:'Rd', data:'#cnt'},
+{opcode:'98', opcode2:'B8', instr: 'cmp', reg:'Rd', data:'#val'},
+{opcode:'99', opcode2:'B9', instr: 'mov', reg:'Rd', data:'#val'},
+{opcode:'9A', opcode2:'BA', instr: 'movinv', reg:'Rd', data:'#val'},
+{opcode:'9B', opcode2:'BB', instr: 'movneg', reg:'Rd', data:'#val'}];
+
+var reg_rel_opcodes =
+[{opcode:'9C', opcode2:'BC', instr: 'lea', reg:'Rd'},
+{opcode:'9D', opcode2:'BD', instr: 'ld', reg:'Rd'},
+{opcode:'9E', opcode2:'BE', instr: 'ldinv', reg:'Rd'},
+{opcode:'9F', opcode2:'BF', instr: 'ldneg', reg:'Rd'}];
+
+var reg_reg_opcodes =
+[{opcode:'6C', instr:'pushb', reg1:'Rs1', reg2:'Rs2'},
+{opcode:'6D', instr:'popb', reg1:'Rd1', reg2:'Rd2'},
+{opcode:'6E', instr:'pushh', reg1:'Rs1', reg2:'Rs2'},
+{opcode:'6F', instr:'poph', reg1:'Rd1', reg2:'Rd2'},
+{opcode:'70', instr:'pushw', reg1:'Rs1', reg2:'Rs2'},
+{opcode:'71', instr:'popw', reg1:'Rd1', reg2:'Rd2'},
+{opcode:'72', instr:'pushd', reg1:'Rs1', reg2:'Rs2'},
+{opcode:'73', instr:'popd', reg1:'Rd1', reg2:'Rd2'},
+{opcode:'74', instr:'pushq', reg1:'Rs1', reg2:'Rs2'},
+{opcode:'75', instr:'popq', reg1:'Rd1', reg2:'Rd2'},
+{opcode:'7D', instr:'mov', reg1:'SP', reg2:'Rs'},
+{opcode:'7E', instr:'mov', reg1:'Rd', reg2:'SP'},
+{opcode:'7F', instr:'mov', reg1:'Rd', reg2:'PC'},
+{opcode:'C0', instr:'cmp', reg1:'Rd', reg2:'Rs'},
+{opcode:'C1', instr:'inc', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'C2', instr:'dec', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'C3', instr:'xchg', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'C4', instr:'add', reg1:'Rd', reg2:'Rs'},
+{opcode:'C5', instr:'addc', reg1:'Rd', reg2:'Rs'},
+{opcode:'C6', instr:'sub', reg1:'Rd', reg2:'Rs'},
+{opcode:'C7', instr:'subb', reg1:'Rd', reg2:'Rs'},
+{opcode:'C8', instr:'umul', reg1:'Rd', reg2:'Rs'},
+{opcode:'C9', instr:'smul', reg1:'Rd', reg2:'Rs'},
+{opcode:'CA', instr:'udiv', reg1:'Rd', reg2:'Rs'},
+{opcode:'CB', instr:'sdiv', reg1:'Rd', reg2:'Rs'},
+{opcode:'CC', instr:'and', reg1:'Rd', reg2:'Rs'},
+{opcode:'CD', instr:'or', reg1:'Rd', reg2:'Rs'},
+{opcode:'CE', instr:'xor', reg1:'Rd', reg2:'Rs'},
+{opcode:'CF', instr:'nand', reg1:'Rd', reg2:'Rs'},
+{opcode:'D0', instr:'nor', reg1:'Rd', reg2:'Rs'},
+{opcode:'D1', instr:'xchg', reg1:'Rd', reg2:'Rs'},
+{opcode:'D2', instr:'lozu', reg1:'Rd', reg2:'Rs'},
+{opcode:'D3', instr:'loou', reg1:'Rd', reg2:'Rs'},
+{opcode:'D4', instr:'hizu', reg1:'Rd', reg2:'Rs'},
+{opcode:'D5', instr:'hiou', reg1:'Rd', reg2:'Rs'},
+{opcode:'D6', instr:'decu', reg1:'Rd', reg2:'Rs'},
+{opcode:'D7', instr:'encu', reg1:'Rd', reg2:'Rs'},
+{opcode:'D8', instr:'sto', reg1:'[Rd]', reg2:'Rs'},
+{opcode:'D9', instr:'mov', reg1:'Rd', reg2:'Rs'},
+{opcode:'DA', instr:'movinv', reg1:'Rd', reg2:'Rs'},
+{opcode:'DB', instr:'movneg', reg1:'Rd', reg2:'Rs'},
+{opcode:'DC', instr:'lea', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'DD', instr:'ld', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'DE', instr:'ldinv', reg1:'Rd', reg2:'[Rs]'},
+{opcode:'DF', instr:'ldneg', reg1:'Rd', reg2:'[Rs]'}];
+
+var reg_reg_imm_opcodes =
+[{opcode:'E0', instr:'setbit', reg1:'Rd', reg2:'[Rs]', data:'#bit'},
+{opcode:'E1', instr:'clrbit', reg1:'Rd', reg2:'[Rs]', data:'#bit'},
+{opcode:'E2', instr:'invbit', reg1:'Rd', reg2:'[Rs]', data:'#bit'},
+{opcode:'E3', instr:'testbit', reg1:'Rs', reg2:'[Rs]', data:'#bit'},
+{opcode:'E4', instr:'add', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'E5', instr:'addc', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'E6', instr:'sub', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'E7', instr:'subb', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'E8', instr:'umul', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'E9', instr:'smul', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'EA', instr:'udiv', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'EB', instr:'sdiv', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'EC', instr:'and', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'ED', instr:'or', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'EE', instr:'xor', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'EF', instr:'nand', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'F0', instr:'nor', reg1:'Rd', reg2:'Rs', data:'#val'},
+{opcode:'F1', instr:'asr', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F2', instr:'shl', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F3', instr:'shr', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F4', instr:'rol', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F5', instr:'ror', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F6', instr:'rcl', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F7', instr:'rcr', reg1:'Rd', reg2:'Rs', data:'#cnt'},
+{opcode:'F8', instr:'sto', reg1:'[Rd', reg2:'#off]', data:'Rs'},
+{opcode:'FA', instr:'stoinv', reg1:'[Rd', reg2:'#off]', data:'Rs'},
+{opcode:'FB', instr:'stoneg', reg1:'[Rd', reg2:'#off]', data:'Rs'},
+{opcode:'FC', instr:'lea', reg1:'Rd', reg2:'[Rs', data:'#off]'},
+{opcode:'FD', instr:'ld', reg1:'Rd', reg2:'[Rs', data:'#off]'},
+{opcode:'FE', instr:'ldinv', reg1:'Rd', reg2:'[Rs', data:'#off]'},
+{opcode:'FF', instr:'ldneg', reg1:'Rd', reg2:'[Rs', data:'#off]'}];
+
+function isSpace(ch)
+{
+    return ((ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
+}
+
+function isIdentStart(ch)
+{
+    return (((ch >= 'A') && (ch <= 'Z')) ||
+        ((ch >= 'a') && (ch <= 'z')) ||
+        (ch == '_' || ch == '.'));
+}
+
+function isIdentChar(ch)
+{
+    return (((ch >= 'A') && (ch <= 'Z')) ||
+        ((ch >= 'a') && (ch <= 'z')) ||
+        ((ch >= '0') && (ch <= '9')) ||
+        (ch == '_' || ch == '.'));
+}
+
+function isHexDigit(ch)
+{
+    return (((ch >= '0') && (ch <= '9')) ||
+        ((ch >= 'A') && (ch <= 'F')) ||
+        ((ch >= 'a') && (ch <= 'f')));
+}
+
+function isDecDigit(ch)
+{
+    return ((ch >= '0') && (ch <= '9'));
+}
+
+function isOctDigit(ch)
+{
+    return ((ch >= '0') && (ch <= '7'));
+}
+
+function isBinDigit(ch)
+{
+    return ((ch >= '0') && (ch <= '1'));
+}
+
+function getChar(oLine, ignoreExisting)
+{
+    if (ignoreExisting === true)
+    {
+        oLine.ch = '';
+    }
+    
+    if (oLine.ch == '')
+    {
+        if (oLine.pos < oLine.srcLine.length)
+        {
+            oLine.ch = oLine.srcLine[oLine.pos++];
+        }
+    }
+    return oLine.ch;
+}
+
+function getToken(oLine, ignoreExisting)
+{
+    if (ignoreExisting === true)
+    {
+        oLine.tkn = TokenType.NONE;
+        oLine.num = undefined;
+        oLine.string = undefined;
+        oLine.ident = undefined;
+        oLine.isLabel = undefined;
+    }
+    
+    if (oLine.tkn === TokenType.NONE)
+    {
+        ch = getChar(oLine);
+        if (isSpace(ch))
+        {
+            oLine.tkn = TokenType.SPACE;
+            while (isSpace(ch))
+            {
+                ch = getChar(oLine, true);
+            }
+
+            if (ch == ';')
+            {
+                oLine.tkn = TokenType.COMMENT;
+                oLine.ch = '';
+                oLine.pos = oLine.srcLine.length;
+            }
+        }
+        else if (ch == ';')
+        {
+            oLine.tkn = TokenType.COMMENT;
+            oLine.ch = '';
+            oLine.pos = oLine.srcLine.length;
+        }
+        else if (isIdentStart(ch))
+        {
+            oLine.tkn = TokenType.IDENT;
+            if (oLine.pos == 1)
+            {
+                oLine.isLabel = true;
+            }
+            oLine.ident = '';
+            while (isIdentChar(ch))
+            {
+                oLine.ident += ch.toLowerCase();
+                ch = getChar(oLine, true);
+            }
+        }
+        else if ((ch == ',') || (ch == '#') || (ch == '[') || (ch == ']'))
+        {
+            oLine.tkn = ch;
+            oLine.ch = '';
+        }
+        else if (ch == '"')
+        {
+            oLine.tkn = TokenType.STRING;
+            var s = '';
+            ch = getChar(oLine, true);
+            while (true)
+            {
+                if (ch === '')
+                {
+                    oLine.tkn = TokenType.ERROR;
+                    return oLine.tkn;
+                }
+                if (ch === '"')
+                {
+                    break;
+                }
+                if (ch === '\\')
+                {
+                    ch = getChar(oLine, true);
+                    if (ch === '')
+                    {
+                        oLine.tkn = TokenType.ERROR;
+                        return oLine.tkn;
+                    }
+                    if (ch === 'r')
+                    {
+                        s += '\r';
+                    }
+                    else if (ch === 'n')
+                    {
+                        s += '\n';
+                    }
+                    else if (ch === 't')
+                    {
+                        s += '\t';
+                    }
+                    else
+                    {
+                        s += ch;
+                    }
+                }
+                else
+                {
+                    s += ch;
+                }
+                ch = getChar(oLine, true);
+            }
+            oLine.string = s;
+        }
+        else if (ch == '$')
+        {
+            oLine.tkn = TokenType.NUMBER;
+            oLine.num = new BigInt();
+            ch = getChar(oLine, true).toUpperCase();
+            if (isHexDigit(ch))
+            {
+                while (isHexDigit(ch))
+                {
+                    if (oLine.num.appendHexChar(ch) == OVERFLOW)
+                    {
+                        oLine.tkn = TokenType.ERROR;
+                        return oLine.tkn;
+                    }
+                    ch = getChar(oLine, true).toUpperCase();
+                }
+            }
+            else
+            {
+                oLine.tkn = TokenType.ERROR;
+            }
+        }
+        else if (isDecDigit(ch))
+        {
+            oLine.tkn = TokenType.NUMBER;
+            oLine.num = new BigInt();
+            while (isDecDigit(ch))
+            {
+                if (oLine.num.appendDecChar(ch) == OVERFLOW)
+                {
+                    oLine.tkn = TokenType.ERROR;
+                    return oLine.tkn;
+                }
+                ch = getChar(oLine, true);
+            }
+        }
+        else if (ch == '@')
+        {
+            oLine.tkn = TokenType.NUMBER;
+            oLine.num = new BigInt();
+            ch = getChar(oLine, true);
+            if (isOctDigit(ch))
+            {
+                while (isOctDigit(ch))
+                {
+                    if (oLine.num.appendOctChar(ch) == OVERFLOW)
+                    {
+                        oLine.tkn = TokenType.ERROR;
+                        return oLine.tkn;
+                    }
+                    ch = getChar(oLine, true);
+                }
+            }
+            else
+            {
+                oLine.tkn = TokenType.ERROR;
+            }
+        }
+        else if (ch == '%')
+        {
+            oLine.tkn = TokenType.NUMBER;
+            oLine.num = new BigInt();
+            ch = getChar(oLine, true);
+            if (isBinDigit(ch))
+            {
+                while (isBinDigit(ch))
+                {
+                    if (oLine.num.appendBinChar(ch) == OVERFLOW)
+                    {
+                        oLine.tkn = TokenType.ERROR;
+                        return oLine.tkn;
+                    }
+                    ch = getChar(oLine, true);
+                }
+            }
+            else
+            {
+                oLine.tkn = TokenType.ERROR;
+            }
+        }
+        else if (ch == '\'')
+        {
+            oLine.tkn = TokenType.NUMBER;
+            oLine.num = new BigInt();
+            ch = getChar(oLine, true);
+            if (ch != '')
+            {
+                if (ch == '\\')
+                {
+                    ch = getChar(oLine, true);
+                    if (ch == '')
+                    {
+                        oLine.tkn = TokenType.ERROR;
+                        return oLine.tkn;
+                    }
+
+                    if (ch.toUpperCase() == 'R')
+                    {
+                        oLine.num.setFromInt('\r'.charCodeAt(0));
+                    }
+                    else if (ch.toUpperCase() == 'N')
+                    {
+                        oLine.num.setFromInt('\n'.charCodeAt(0));
+                    }
+                    else if (ch.toUpperCase() == 'T')
+                    {
+                        oLine.num.setFromInt('\t'.charCodeAt(0));
+                    }
+                    else
+                    {
+                        oLine.num.setFromInt(ch.charCodeAt(0));
+                    }
+                }
+                else
+                {
+                    oLine.num.setFromInt(ch.charCodeAt(0));
+                }
+
+                ch = getChar(oLine, true);
+                if (ch == '\'')
+                {
+                    ch = getChar(oLine, true);
+                }
+                else
+                {
+                    oLine.tkn = TokenType.ERROR;
+                }
+            }
+            else
+            {
+                oLine.tkn = TokenType.ERROR;
+            }
+        }
+        else
+        {
+            oLine.tkn = TokenType.ERROR;
+        }
+    }
+    return oLine.tkn;
+}
+
+function parseLine(line)
+{
+    var oInstr = { tokens:[] };
+    var oLine = { srcLine:line, pos:0, ch:'', tkn:TokenType.NONE };
+    var tkn = getToken(oLine);
+    while ((tkn != TokenType.NONE) && (tkn != TokenType.ERROR))
+    {
+        if (tkn != TokenType.SPACE)
+        {
+            if (oLine.isLabel === true)
+            {
+                oInstr.label = oLine.ident;
+            }
+            else if (oLine.num !== undefined)
+            {
+                oInstr.tokens.push({ tkn:tkn, num:oLine.num });
+            }
+            else if (oLine.string !== undefined)
+            {
+                oInstr.tokens.push({ tkn:tkn, string:oLine.string });
+            }
+            else
+            {
+                oInstr.tokens.push({ tkn:tkn, ident:oLine.ident });
+            }
+        }
+        tkn = getToken(oLine, true);
+    }
+    return oInstr;
+}
+
+function getRegCode(reg)
+{
+    var reguc = reg.toUpperCase();
+    for (var r = 0; r < reg_names.length; r++)
+    {
+        if (reguc == reg_names[r].reg)
+        {
+            return reg_names[r].code;
+        }
+    }
+    return null;
+}
+
+function parseInhOpcodes(oInstr)
+{
+    if ((oInstr.tokens.length == 1) &&
+        (oInstr.tokens[0].tkn === TokenType.IDENT))
+    {
+        for (var i = 0; i < inh_opcodes.length; i++)
+        {
+            if (oInstr.tokens[0].ident == inh_opcodes[i].instr)
+            {
+                oInstr.coding = [ inh_opcodes[i].opcode ];
+                oInstr.minSize = 1;
+                oInstr.maxSize = 1;
+                oInstr.size = 1;
+                oInstr.resolved = true;
+                oInstr.mode = 'INH';
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parseRelOpcodes(oInstr)
+{
+    if ((oInstr.tokens.length == 2) &&
+        (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+        (oInstr.tokens[1].tkn === TokenType.IDENT))
+    {
+        for (var i = 0; i < rel_opcodes.length; i++)
+        {
+            var match = false;
+            if (Array.isArray(rel_opcodes[i].instr))
+            {
+                for (var a = 0; a < rel_opcodes[i].instr.length; a++)
+                {
+                    if (oInstr.tokens[0].ident == rel_opcodes[i].instr[a])
+                    {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                match = (oInstr.tokens[0].ident == rel_opcodes[i].instr);
+            }
+
+            if (match)
+            {
+                oInstr.opcode = rel_opcodes[i].opcode;
+                oInstr.opcode2 = rel_opcodes[i].opcode2;
+                oInstr.minSize = 2;
+                oInstr.maxSize = 3;
+                oInstr.size = 0;
+                oInstr.resolved = false;
+                oInstr.mode = 'REL';
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parseRegOpcodes(oInstr)
+{
+    if (((oInstr.tokens.length == 2) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT)) ||
+        ((oInstr.tokens.length == 4) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[2].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[3].tkn === TokenType.RBRACKET)))
+    {
+        for (var i = 0; i < reg_opcodes.length; i++)
+        {
+            if ((oInstr.tokens[0].ident == reg_opcodes[i].instr) &&
+                (((oInstr.tokens.length == 2) && (reg_opcodes[i].reg.indexOf('[') < 0)) ||
+                 ((oInstr.tokens.length == 4) && (reg_opcodes[i].reg.indexOf('[') >= 0))))
+            {
+                oInstr.coding = [ reg_opcodes[i].opcode ];
+                oInstr.minSize = 2;
+                oInstr.maxSize = 2;
+                oInstr.size = 2;
+                oInstr.resolved = true;
+                oInstr.mode = 'REG';
+                oInstr.reg = reg_opcodes[i].reg;
+                if (oInstr.tokens.length == 4)
+                {
+                    oInstr.indirect = true;
+                    oInstr.regCode = getRegCode(oInstr.tokens[2].ident);
+                }
+                else
+                {
+                    oInstr.regCode = getRegCode(oInstr.tokens[1].ident);
+                }
+
+                if (oInstr.regCode === null)
+                {
+                    oInstr.error = "Invalid register name. [1]";
+                    return false;
+                }
+                oInstr.coding.push(oInstr.regCode);
+                
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parseRegRelOpcodes(oInstr)
+{
+    if ((oInstr.tokens.length == 4) &&
+        (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+        (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+        (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+        (oInstr.tokens[3].tkn === TokenType.IDENT))
+    {
+        for (var i = 0; i < reg_rel_opcodes.length; i++)
+        {
+            if (oInstr.tokens[0].ident == reg_rel_opcodes[i].instr)
+            {
+                oInstr.opcode = reg_rel_opcodes[i].opcode;
+                oInstr.opcode2 = reg_rel_opcodes[i].opcode2;
+                oInstr.reg = reg_opcodes[i].reg;
+                oInstr.regCode = getRegCode(oInstr.tokens[1].ident);
+                oInstr.minSize = 3;
+                oInstr.maxSize = 4;
+                oInstr.size = 0;
+                oInstr.resolved = false;
+                oInstr.mode = 'REL';
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function getRegWidth(reg)
+{
+    var reguc = reg.toUpperCase();
+    if (reguc === 'SP') return 32;
+    if (reguc === 'PC') return 32;
+    if (reguc[1] === 'B') return 8;
+    if (reguc[1] === 'H') return 16;
+    if (reguc[1] === 'W') return 32;
+    if (reguc[1] === 'D') return 64;
+    if (reguc[1] === 'Q') return 128;
+    return 0;
+}
+
+function parseRegImmOpcodes(oInstr)
+{
+    if ((oInstr.tokens.length == 5) &&
+        (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+        (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+        (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+        (oInstr.tokens[3].tkn === TokenType.POUND) &&
+        (oInstr.tokens[4].tkn === TokenType.NUMBER))
+    {
+        for (var i = 0; i < reg_imm_opcodes.length; i++)
+        {
+            if (oInstr.tokens[0].ident == reg_imm_opcodes[i].instr)
+            {
+                oInstr.coding = [ reg_imm_opcodes[i].opcode ];
+                oInstr.minSize = 3;
+                oInstr.maxSize = 18;
+                oInstr.size = 3;
+                oInstr.resolved = true;
+                oInstr.mode = 'REGIMM';
+                var mustUseHW = false;
+
+                if (reg_imm_opcodes[i].reg === 'SP')
+                {
+                    if (oInstr.tokens[1].ident.toUpperCase() !== 'SP')
+                        continue; // look for another instruction format
+                    else
+                        mustUseHW = true;
+                }
+                else
+                {
+                    oInstr.reg = reg_imm_opcodes[i].reg;
+                    oInstr.regCode = getRegCode(oInstr.tokens[1].ident);
+                    if (oInstr.regCode === null)
+                    {
+                        oInstr.error = "Invalid register name. [2]";
+                        return false;
+                    }
+                }
+                
+                if (reg_imm_opcodes[i].data === '#bit')
+                {
+                    var width = getRegWidth(oInstr.tokens[1].ident);
+                    var biwidth = new BigInt();
+                    biwidth.setFromInt(width);
+                    if (oInstr.tokens[4].num.isNegative() ||
+                        (oInstr.tokens[4].num.compare(biwidth) >= 0))
+                    {
+                        oInstr.error = "Invalid bit number within register.";
+                        return false;
+                    }
+                }
+
+                if (reg_imm_opcodes[i].data === '#cnt')
+                {
+                    var width = getRegWidth(oInstr.tokens[1].ident);
+                    var biwidth = new BigInt();
+                    biwidth.setFromInt(width);
+                    if (oInstr.tokens[4].num.isNegative() ||
+                        (oInstr.tokens[4].num.compare(biwidth) > 0))
+                    {
+                        oInstr.error = "Invalid shift count.";
+                        return false;
+                    }
+                }
+
+                if (mustUseHW)
+                {
+                    oInstr.coding = [ reg_imm_opcodes[i].opcode2 ];
+                    oInstr.coding.push(oInstr.tokens[4].num.toHexString(0, 1));
+                    oInstr.coding.push(oInstr.tokens[4].num.toHexString(1, 1));
+                }
+                else
+                {
+                    if ((reg_imm_opcodes[i].opcode !== undefined) && oInstr.tokens[4].num.fitsInWidth(8))
+                    {
+                        oInstr.coding = [reg_imm_opcodes[i].opcode ];
+                        oInstr.coding.push(oInstr.regCode);
+                        oInstr.coding.push(oInstr.tokens[4].num.toHexString(0, 1));
+                    }
+                    else
+                    {
+                        var width = getRegWidth(oInstr.tokens[1].ident);
+                        if (oInstr.tokens[4].num.fitsInWidth(width))
+                        {
+                            oInstr.coding = [ reg_imm_opcodes[i].opcode2 ];
+                            oInstr.coding.push(oInstr.regCode);
+                            var nbytes = width / 8;
+                            oInstr.size = 2 + nbytes;
+                            for (var b = 0; b < nbytes; b++)
+                            {
+                                oInstr.coding.push(oInstr.tokens[4].num.toHexString(b, 1));
+                            }
+                        }
+                        else
+                        {
+                            oInstr.error = "Number too wide.";
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parseRegRegOpcodes(oInstr)
+{
+    var direct =
+        ((oInstr.tokens.length == 4) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[3].tkn === TokenType.IDENT));
+
+    var indirectSrc =
+        ((oInstr.tokens.length == 6) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[3].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[4].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[5].tkn === TokenType.RBRACKET));
+
+    var indirectDst =
+        ((oInstr.tokens.length == 6) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[2].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[3].tkn === TokenType.RBRACKET) &&
+            (oInstr.tokens[4].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[5].tkn === TokenType.IDENT));
+
+    if (direct === true || indirectSrc === true || indirectDst === true)
+    {
+        for (var i = 0; i < reg_reg_opcodes.length; i++)
+        {
+            if (oInstr.tokens[0].ident == reg_reg_opcodes[i].instr)
+            {
+                var match = false;
+                var itemIsIndirectSrc = (reg_reg_opcodes[i].reg2.indexOf('[') >= 0);
+                var itemIsIndirectDst = (reg_reg_opcodes[i].reg1.indexOf('[') >= 0);
+                var itemIsDirect = !(itemIsIndirectSrc || itemIsIndirectDst);
+                var reg1Special = (reg_reg_opcodes[i].reg1 === 'SP');
+                var reg2Special = ((reg_reg_opcodes[i].reg2 === 'SP') || (reg_reg_opcodes[i].reg2 === 'PC'));
+
+                if (direct === true && itemIsDirect === true)
+                {
+                    if (reg1Special !== (oInstr.tokens[1].ident.toUpperCase() === reg_reg_opcodes[i].reg1))
+                    {
+                        continue; // look for another instruction format
+                    }
+                    if (reg2Special !== (oInstr.tokens[3].ident.toUpperCase() === reg_reg_opcodes[i].reg2))
+                    {
+                        continue; // look for another instruction format
+                    }
+                    if ((reg_reg_opcodes[i].reg1 === 'Rs1') || (reg_reg_opcodes[i].reg1 === 'Rd1'))
+                    {
+                        if (oInstr.tokens[1].ident.toUpperCase().substring(0, 2) !==
+                            oInstr.tokens[3].ident.toUpperCase().substring(0, 2))
+                        {
+                            oInstr.error = "Invalid register pair.";
+                            return false;
+                        }
+                    }
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[1].ident),
+                        getRegCode(oInstr.tokens[3].ident) ];
+                }
+                else if (indirectSrc === true && itemIsIndirectSrc === true)
+                {
+                    if (reg2Special !== (oInstr.tokens[4].ident.toUpperCase() === reg_reg_opcodes[i].reg2))
+                    {
+                        continue; // look for another instruction format
+                    }
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[1].ident),
+                        getRegCode(oInstr.tokens[4].ident) ];
+                }
+                else if (indirectDst === true && itemIsIndirectDst === true)
+                {
+                    if (reg1Special !== (oInstr.tokens[5].ident.toUpperCase() === reg_reg_opcodes[i].reg1))
+                    {
+                        continue; // look for another instruction format
+                    }
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[2].ident),
+                        getRegCode(oInstr.tokens[5].ident) ];
+                }
+
+                if (match === true)
+                {
+                    oInstr.coding = [ reg_reg_opcodes[i].opcode ];
+                    oInstr.minSize = 3;
+                    oInstr.maxSize = 3;
+                    oInstr.size = 3;
+                    oInstr.resolved = true;
+                    oInstr.mode = 'REGREG';
+                    oInstr.reg = [ reg_reg_opcodes[i].reg1, reg_reg_opcodes[i].reg2 ];
+                    oInstr.indirect = ((indirectSrc === true) || (itemIsIndirectDst === true));
+
+                    if (reg1Special === false)
+                    {
+                        if ((oInstr.regCode[0] === null))
+                        {
+                            oInstr.error = "Invalid register name. [3]";
+                            return false;
+                        }
+                        oInstr.coding.push(oInstr.regCode[0]);
+                    }
+                    if (reg2Special === false)
+                    {
+                        if ((oInstr.regCode[1] === null))
+                        {
+                            oInstr.error = "Invalid register name. [4]";
+                            return false;
+                        }
+                        oInstr.coding.push(oInstr.regCode[1]);
+                    }
+                    
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function parseRegRegImmOpcodes(oInstr)
+{
+    var direct =
+        ((oInstr.tokens.length == 7) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[3].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[4].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[5].tkn === TokenType.POUND) &&
+            (oInstr.tokens[6].tkn === TokenType.NUMBER));
+
+    var indirectSrc =
+        ((oInstr.tokens.length == 9) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[3].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[4].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[5].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[6].tkn === TokenType.POUND) &&
+            (oInstr.tokens[7].tkn === TokenType.NUMBER) &&
+            (oInstr.tokens[8].tkn === TokenType.RBRACKET));
+
+    var indirectSrc2 =
+        ((oInstr.tokens.length == 9) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[2].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[3].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[4].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[5].tkn === TokenType.RBRACKET) &&
+            (oInstr.tokens[6].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[7].tkn === TokenType.POUND) &&
+            (oInstr.tokens[8].tkn === TokenType.NUMBER));
+
+    var indirectDst =
+        ((oInstr.tokens.length == 9) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.LBRACKET) &&
+            (oInstr.tokens[2].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[3].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[4].tkn === TokenType.POUND) &&
+            (oInstr.tokens[5].tkn === TokenType.NUMBER) &&
+            (oInstr.tokens[6].tkn === TokenType.RBRACKET) &&
+            (oInstr.tokens[7].tkn === TokenType.COMMA) &&
+            (oInstr.tokens[8].tkn === TokenType.IDENT));
+
+    if (direct === true || indirectSrc === true || indirectSrc2 === true || indirectDst === true)
+    {
+        for (var i = 0; i < reg_reg_imm_opcodes.length; i++)
+        {
+            if (oInstr.tokens[0].ident == reg_reg_imm_opcodes[i].instr)
+            {
+                var match = false;
+                var num = null;
+                var itemIsIndirectSrc = (reg_reg_imm_opcodes[i].reg2.indexOf('[') >= 0);
+                var itemIsIndirectDst = (reg_reg_imm_opcodes[i].reg1.indexOf('[') >= 0);
+                var itemIsDirect = !(itemIsIndirectSrc || itemIsIndirectDst);
+                var rs = null;
+
+                if (direct === true && itemIsDirect === true)
+                {
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[1].ident),
+                        getRegCode(oInstr.tokens[3].ident) ];
+                    num = oInstr.tokens[6].num;
+                    rs = oInstr.tokens[3].ident;
+                }
+                else if (indirectSrc === true && itemIsIndirectSrc === true)
+                {
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[1].ident),
+                        getRegCode(oInstr.tokens[4].ident) ];
+                    num = oInstr.tokens[7].num;
+                    rs = oInstr.tokens[4].ident;
+                }
+                else if (indirectSrc2 === true && itemIsIndirectSrc === true)
+                {
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[1].ident),
+                        getRegCode(oInstr.tokens[4].ident) ];
+                    num = oInstr.tokens[8].num;
+                    rs = oInstr.tokens[4].ident;
+                }
+                else if (indirectDst === true && itemIsIndirectDst === true)
+                {
+                    match = true;
+                    oInstr.regCode = [ getRegCode(oInstr.tokens[2].ident),
+                        getRegCode(oInstr.tokens[8].ident) ];
+                    num = oInstr.tokens[5].num;
+                    rs = oInstr.tokens[8].ident;
+                }
+
+                if (match === true)
+                {
+                    var width = getRegWidth(rs);
+                    oInstr.resolved = true;
+                    oInstr.mode = 'REGREGIMM';
+                    oInstr.reg = [ reg_reg_imm_opcodes[i].reg1, reg_reg_imm_opcodes[i].reg2 ];
+                    oInstr.indirect = ((indirectSrc === true) || (itemIsIndirectDst === true));
+
+                    if (oInstr.regCode === undefined)
+                    {
+                        oInstr.error = "Invalid register name. [5]";
+                        return false;
+                    }
+
+                    oInstr.coding = [ reg_reg_imm_opcodes[i].opcode ];
+                    oInstr.coding.push(oInstr.regCode[0]);
+                    oInstr.coding.push(oInstr.regCode[1]);
+
+                    if (reg_reg_imm_opcodes[i].data === '#bit')
+                    {
+                        var biwidth = new BigInt();
+                        biwidth.setFromInt(width);
+                        if (num.isNegative() ||
+                            (num.compare(biwidth) >= 0))
+                        {
+                            oInstr.error = "Invalid bit number within register.";
+                            return false;
+                        }
+                        else
+                        {
+                            oInstr.coding.push(num.toHexString(0, 1));
+                            oInstr.size = 4;
+                            return true;
+                        }
+                    }
+
+                    if (reg_reg_imm_opcodes[i].data === '#cnt')
+                    {
+                        var biwidth = new BigInt();
+                        biwidth.setFromInt(width);
+                        if (num.isNegative() ||
+                            (num.compare(biwidth) > 0))
+                        {
+                            oInstr.error = "Invalid shift count.";
+                            return false;
+                        }
+                        else
+                        {
+                            oInstr.coding.push(num.toHexString(0, 1));
+                            oInstr.size = 4;
+                            return true;
+                        }
+                    }
+
+                    if (num.fitsInWidth(width))
+                    {
+                        var nbytes = width / 8;
+                        oInstr.size = 3 + nbytes;
+                        for (var b = 0; b < nbytes; b++)
+                        {
+                            oInstr.coding.push(num.toHexString(b, 1));
+                        }
+                    }
+                    else
+                    {
+                        oInstr.error = "Number too wide.";
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function padZeros(val, width)
+{
+    var v = String(val);
+    while (v.length < width)
+    {
+        v = '0' + v;
+    }
+    return v;
+}
+
+function padBlanks(val, width)
+{
+    var v = String(val);
+    while (v.length < width)
+    {
+        v += ' ';
+    }
+    return v;
+}
+
+function arrangeBytes(coding, width)
+{
+    var lines = [];
+    if (coding !== undefined && coding !== null)
+    {
+        var b = '';
+        for (var i = 0; i < coding.length; i++)
+        {
+            if (b.length > 0)
+            {
+                b += ' ';
+            }
+            b += String(coding[i]);
+            if ((i % 4) === 3)
+            {
+                lines.push(padBlanks(b, width));
+                b = '';
+            }
+        }
+        if (b.length > 0)
+        {
+            lines.push(padBlanks(b, width));
+        }
+    }
+    else
+    {
+        lines.push(padBlanks(' ', width));
+    }
+    return lines;
+}
+
+function resolveBranches(instructions, lastTry)
+{
+    // All of the branches were first assumed to be short (offset of -128 to +127 bytes from PC).
+    // Any branches that cannot reach must be changed to long (offset of -32768 to +32767 bytes).
+    var changes = false;
+    for (var i = 0; i < instructions.length; i++)
+    {
+        var oBranchInstr = instructions[i];
+        if (oBranchInstr.mode === 'REL')
+        {
+            // Find the destination label.
+            var oTargetInstr = null;
+            var target = (oBranchInstr.tokens.length > 2 ?
+                            oBranchInstr.tokens[3].ident : oBranchInstr.tokens[1].ident);
+            for (var d = 0; d < instructions.length; d++)
+            {
+                if (instructions[d].label !== undefined &&
+                    instructions[d].label.toUpperCase() == target.toUpperCase())
+                {
+                    oTargetInstr = instructions[d];
+                    break;
+                }
+            }
+            
+            if (oTargetInstr === null)
+            {
+                oBranchInstr.error = 'Undefined label as branch target.';
+            }
+            else
+            {
+                var dstLoc = oTargetInstr.pc;
+                var srcLoc = oBranchInstr.pc + oBranchInstr.size;
+                var offset = dstLoc - srcLoc;
+                if ((offset >= -128) && (offset <= 127))
+                {
+                    changes ||= (oBranchInstr.size != 2);
+                    oBranchInstr.dstLoc = dstLoc;
+                    oBranchInstr.srcLoc = srcLoc;
+                    oBranchInstr.offset = offset;
+                    oBranchInstr.addtopc = (offset < 0 ? offset + 256 : offset);
+                    oBranchInstr.resolved = true;
+                    changes = true;
+                    var offsetHex = ('00' + oBranchInstr.addtopc.toString(16).toUpperCase()).slice(-2);
+                    if (oBranchInstr.regCode !== undefined)
+                    {
+                        oBranchInstr.size = 3;
+                        oBranchInstr.coding =
+                            [ oBranchInstr.opcode, oBranchInstr.regCode, offsetHex ];
+                    }
+                    else
+                    {
+                        oBranchInstr.size = 2;
+                        oBranchInstr.coding =
+                            [ oBranchInstr.opcode, offsetHex ];
+                    }
+                }
+                else if ((offset >= -32768) && (offset <= 32767))
+                {
+                    changes ||= (oBranchInstr.size != 3);
+                    oBranchInstr.dstLoc = dstLoc;
+                    oBranchInstr.srcLoc = srcLoc;
+                    oBranchInstr.offset = offset;
+                    oBranchInstr.addtopc = (offset < 0 ? offset + 65536 : offset);
+                    oBranchInstr.resolved = true;
+                    changes = true;
+                    var offsetHex = ('0000' + oBranchInstr.addtopc.toString(16).toUpperCase()).slice(-4);
+                    if (oBranchInstr.regCode !== undefined)
+                    {
+                        oBranchInstr.size = 4;
+                        oBranchInstr.coding =
+                            [ oBranchInstr.opcode2, oBranchInstr.regCode,
+                                offsetHex.slice(-2), offsetHex.substring(0, 2) ];
+                    }
+                    else
+                    {
+                        oBranchInstr.size = 3;
+                        oBranchInstr.coding =
+                            [ oBranchInstr.opcode2, offsetHex.slice(-2), offsetHex.substring(0, 2) ];
+                    }
+                }
+                else if (lastTry === true)
+                {
+                    oBranchInstr.error = 'Branch target is too far away.';
+                }
+            }
+        }
+    }
+    return changes;
+}
+
+function updateProgramCounter(instructions)
+{
+    var programCounter = 0;
+    for (var i = 0; i < instructions.length; i++)
+    {
+        var oInstr = instructions[i];
+        oInstr.pc = programCounter;
+        programCounter += oInstr.size;
+    }
+    return programCounter;
+}
+
+function assembleProgram(program)
+{
+    // Perform pass 1 of the assembly. This will not resolve branches.
+    var instructions = [];
+    var labels = [];
+    var programLines = program.split('\r\n');
+    var programCounter = 0;
+    for (var i = 0; i < programLines.length; i++)
+    {
+        var oInstr = parseLine(programLines[i]);
+        oInstr.size = 0;
+
+        if ((oInstr.error === undefined) && (oInstr.label !== undefined))
+        {
+            var label = oInstr.label.toUpperCase();
+            if (labels[label] !== undefined)
+            {
+                oInstr.error = 'Duplicate label.';
+            }
+            else if ((oInstr.tokens.length === 2) &&
+                (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+                (oInstr.tokens[1].tkn === TokenType.NUMBER) &&
+                (oInstr.tokens[0].ident.toUpperCase() === 'EQU'))
+            {
+                labels[label] = oInstr.tokens[1].num;
+                oInstr.isEQU = true;
+            }
+            else
+            {
+                labels[label] = true;
+            }
+        }
+
+        if ((oInstr.error === undefined) &&
+            (oInstr.tokens.length >= 2) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[0].ident.length === 3) &&
+            ('DCB,DCH,DCW,DCD,DCQ'.indexOf(oInstr.tokens[0].ident.toUpperCase()) >= 0))
+        {
+            oInstr.coding = [];
+            for (var t = 1; t < oInstr.tokens.length; t++)
+            {
+                if (oInstr.tokens[t].tkn === TokenType.NUMBER)
+                {
+                    var style = oInstr.tokens[0].ident.toUpperCase();
+                    var num = oInstr.tokens[t].num;
+                    var numBytes = 0;
+                    if (style === 'DCB')
+                    {
+                        numBytes = 1;
+                    }
+                    else if (style === 'DCH')
+                    {
+                        numBytes = 2;
+                    }
+                    else if (style === 'DCW')
+                    {
+                        numBytes = 4;
+                    }
+                    else if (style === 'DCD')
+                    {
+                        numBytes = 8;
+                    }
+                    else if (style === 'DCQ')
+                    {
+                        numBytes = 16;
+                    }
+                    for (var b = 0; b < numBytes; b++)
+                    {
+                        oInstr.coding.push(num.toHexString(b, 1));
+                    }
+                    oInstr.size += numBytes;
+                }
+                else if (oInstr.tokens[t].tkn !== TokenType.COMMA)
+                {
+                    oInstr.error = 'Invalid constant definition.';
+                }
+            }
+            oInstr.isDEF = true;
+        }
+
+        if ((oInstr.error === undefined) &&
+            (oInstr.tokens.length === 2) &&
+            (oInstr.tokens[0].tkn === TokenType.IDENT) &&
+            (oInstr.tokens[1].tkn === TokenType.STRING) &&
+            ((oInstr.tokens[0].ident.toUpperCase() === 'DCS') ||
+             (oInstr.tokens[0].ident.toUpperCase() === 'DCSZ')))
+        {
+            oInstr.coding = [];
+            var s = oInstr.tokens[1].string;
+            var numBytes = s.length;
+            for (var b = 0; b < numBytes; b++)
+            {
+                oInstr.coding.push(('00' + s.charCodeAt(b).toString(16).toUpperCase()).slice(-2));
+            }
+            if (oInstr.tokens[0].ident.toUpperCase() === 'DCSZ')
+            {
+                oInstr.coding.push('00'); // null-terminator
+                numBytes++;
+            }
+            oInstr.size += numBytes;
+            oInstr.isDEF = true;
+        }
+
+        if ((oInstr.isEQU !== true) &&
+            (oInstr.isDEF !== true) &&
+            (oInstr.tokens.length > 0))
+        {
+            for (var t = 2; t < oInstr.tokens.length; t++)
+            {
+                if (oInstr.tokens[t].tkn === TokenType.IDENT)
+                {
+                    var ident = oInstr.tokens[t].ident.toUpperCase();
+                    if (labels[ident] !== undefined && labels[ident] !== true)
+                    {
+                        oInstr.tokens[t].tkn = TokenType.NUMBER;
+                        oInstr.tokens[t].num = labels[ident];
+                    }
+                }
+            }
+
+            var found = parseInhOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRelOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRegOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRegRelOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRegImmOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRegRegOpcodes(oInstr);
+            if (found === false && oInstr.error === undefined) found = parseRegRegImmOpcodes(oInstr);
+
+            if (found === false && oInstr.error === undefined && oInstr.tokens[0].tkn !== TokenType.COMMENT)
+            {
+                oInstr.error = 'Syntax error.';
+            }
+        }
+
+        oInstr.srcLine = programLines[i];
+        oInstr.lineNum = i + 1;
+        oInstr.pc = programCounter;
+        programCounter += oInstr.size;
+        instructions.push(oInstr);
+    }
+
+    // Perform pass 2 of the assembly. This will resolve branches.
+    for (var tries = 0; tries < 10; tries++)
+    {
+        if (resolveBranches(instructions, (tries === 9)))
+        {
+            programCounter = updateProgramCounter(instructions);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Generate the assembler listing.
+    var listing = '';
+    var code = '';
+    var rom = '';
+    var errors = 0;
+    var bytes = '';
+    var rombytes = '';
+    var romline = 0;
+    for (var i = 0; i < instructions.length; i++)
+    {
+        var oInstr = instructions[i];
+
+        listing += padZeros(oInstr.lineNum, 5) + ': ';
+
+        if (oInstr.size > 0)
+        {
+            var pcHex = oInstr.pc.toString(16).toUpperCase();
+            listing += padZeros(pcHex, 5) + ' ';
+            listing += '(' + padZeros(oInstr.size, 2) + ')' + ' ';
+        }
+        else
+        {
+            listing += padBlanks('.....', 11);
+        }
+        
+        var codeValues = arrangeBytes(oInstr.coding, 13);
+        listing += codeValues[0];
+        listing += oInstr.srcLine;
+        
+        if (oInstr.coding !== undefined)
+        {
+            for (var c = 0; c < oInstr.coding.length; c++)
+            {
+                if (bytes.length >= 64)
+                {
+                    code += bytes + '\r\n';
+                    rom += 'INIT_' +
+                        ('00' + romline.toString(16).toUpperCase()).slice(-2) +
+                        ' => "' + rombytes + '",\r\n';
+                    if (++romline >= 32)
+                    {
+                        romline = 0;
+                    }
+                    bytes = '';
+                    rombytes = '';
+                }
+                bytes += oInstr.coding[c];
+                rombytes = oInstr.coding[c] + rombytes;
+            }
+        }
+ 
+        if ((oInstr.mode === 'REL') && (oInstr.resolved === true))
+        {
+            var srcLoc = ('00000' + oInstr.srcLoc.toString(16).toUpperCase()).slice(-5);
+            var dstLoc = ('00000' + oInstr.dstLoc.toString(16).toUpperCase()).slice(-5);
+            var offset = null;
+            if (oInstr.offset < 0)
+            {
+                offset = '-' + ('0000' + (-oInstr.offset).toString(16).toUpperCase()).slice(-4);
+            }
+            else
+            {
+                offset = ('0000' + oInstr.offset.toString(16).toUpperCase()).slice(-4);
+            }
+            listing += ' (' + dstLoc + ')';
+        }
+        
+        listing += '\r\n';
+
+        for (var v = 1; v < codeValues.length; v++)
+        {
+            listing += padBlanks(' ', 18) + codeValues[v] + '\r\n';
+        }
+
+        if (oInstr.error !== undefined)
+        {
+            listing += '^^ ERROR: ' + oInstr.error + '\r\n\r\n';
+            errors++;
+        }
+    }
+
+    if (bytes.length > 0)
+    {
+        code += bytes + '\r\n';
+        while (rombytes.length < 64)
+        {
+            rombytes = '00' + rombytes;
+        }
+        rom += 'INIT_' +
+            ('00' + romline.toString(16).toUpperCase()).slice(-2) +
+            ' => "' + rombytes + '",\r\n';
+    }
+    
+    listing += String(errors) + ' error(s), ' +
+        ('00000' + programCounter.toString(16).toUpperCase()).slice(-5) + ' byte(s).\r\n';
+        
+    return { listing: listing, code: code, rom: rom };
+}
+    </script>
+    
+    <p>This is not a text editor. To assemble an externally edited source file, select it here.</p>
+    
+    <input type="file" name="inputfile"
+        id="inputfile"> 
+    <br>
+   
+    <div>
+    <p>Assembly Listing:</p>
+    <textarea readonly id="listing" rows="15" cols="120"></textarea>
+    </div>
+
+    <div>
+    <p>Generated Code:</p>
+    <p>This output is a simple stream of bytes in memory order (low to high).</p>
+    <textarea readonly id="code" rows="10" cols="70"></textarea>
+    </div>
+      
+    <div>
+    <p>FPGA ROM Code:</p>
+    <p>This output is formatted for use in Xilinx block RAM.</p>
+    <textarea readonly id="rom" rows="10" cols="90"></textarea>
+    </div>
+      
+    <script type="text/javascript"> 
+        document.getElementById('inputfile') 
+            .addEventListener('change', function()
+            {
+                var fr = new FileReader(); 
+                fr.onload = function()
+                {
+                    var assembly = assembleProgram(fr.result);
+                    document.getElementById('listing').value = assembly.listing;
+                    document.getElementById('code').value = assembly.code;
+                    document.getElementById('rom').value = assembly.rom;
+                } 
+                fr.readAsText(this.files[0]);
+            });
+    </script> 
+    <iframe src="copyright.html" seamless></iframe>
+</body> 
+
+</html>

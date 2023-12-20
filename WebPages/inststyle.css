@@ -1,0 +1,113 @@
+body {
+  background-color: lightblue;
+}
+
+h1 {
+  color: navy;
+}
+
+table.BorderedTable {
+  border-collapse: collapse;
+  border: 1px solid gray;
+}
+
+tr.BorderedRow {
+  border: 1px solid gray;
+}
+
+td.BorderedCell {
+  border: 1px solid gray;
+}
+
+td.NavigationPane {
+  vertical-align: top;
+  background-color: darkgray;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+tr.NavigationPaneGroup {
+  color: white;
+}
+
+td.InstDtlPane {
+  vertical-align: top;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+tr.InstDtlRow {
+  border: 1px solid gray;
+  font-family: "Lucida Console";
+}
+
+td.InstDtlCell {
+  vertical-align: top;
+  text-align: left;
+  border: 1px solid gray;
+}
+
+tr.FlagDtlRow {
+  border: 1px solid gray;
+  font-family: "Lucida Console";
+}
+
+td.FlagDtlCell {
+  text-align: center;
+  border: 1px solid gray;
+}
+
+tr.EncodingRow {
+  border: 1px solid gray;
+}
+
+td.BitNbr {
+	font-size: 12px;
+}
+
+tr.RegOvrRow {
+  border: 1px solid gray;
+  font-family: "Lucida Console";
+}
+
+td.RegOvrCell {
+  text-align: center;
+  border: 1px solid gray;
+}
+
+a:link {
+  color: darkblue;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: green;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:active {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+pre {
+  border: 1px solid gray;
+}
+
+iframe[seamless] {
+    border: none;
+}
+

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="index.html">Home</a></td></tr>
+	<tr><td><a href="registers.html">Registers</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>Register Set</h1>
+	<h2>General Purpose</h2>
+	<p>The CPU has 128 bytes of register storage for general-purpose use.
+	Adjacent portions of this storage may be accessed as 8-, 16-, 32-, 64-, or 128-bit values.
+	Registers are overlain such that accessing (reading or writing) one register implies accessing several more.
+	This setup allows updating a smaller portion of a larger register, by treating that portion as a smaller register.
+	It also allows treating an adjacent set of smaller registers as a single larger register.
+	</p>
+	<p>The following table shows how the general-purpose registers overlay each other.
+	If a particular register is accessed, then every register above or below it,
+	that lies partially or fully in the same horizontal space in the table, is also accessed.</p>
+	<p>For example, accessing RB001 also accesses RH00, RW00, RD00, and RQ0.
+	Accessing RD03 also accesses RB024..RB031, RH12..RH15, RW06..RW07, and RQ1.</p>
+	<p>The table also shows the 8-bit binary register selector value for each register.
+	The assembler converts register names (e.g., RH04) to selection values (e.g. 84H).</p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><b>Selector</b></td>
+			<td class="RegOvrCell"><b>Width</b></td>
+			<td colspan=16 class="RegOvrCell"><b>Overlays</b></td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB015<br>(0FH)</td>
+			<td class="RegOvrCell">RB014<br>(0EH)</td>
+			<td class="RegOvrCell">RB013<br>(0DH)</td>
+			<td class="RegOvrCell">RB012<br>(0CH)</td>
+			<td class="RegOvrCell">RB010<br>(0AH)</td>
+			<td class="RegOvrCell">RB011<br>(0BH)</td>
+			<td class="RegOvrCell">RB009<br>(09H)</td>
+			<td class="RegOvrCell">RB008<br>(08H)</td>
+			<td class="RegOvrCell">RB007<br>(07H)</td>
+			<td class="RegOvrCell">RB006<br>(06H)</td>
+			<td class="RegOvrCell">RB005<br>(05H)</td>
+			<td class="RegOvrCell">RB004<br>(04H)</td>
+			<td class="RegOvrCell">RB003<br>(03H)</td>
+			<td class="RegOvrCell">RB002<br>(02H)</td>
+			<td class="RegOvrCell">RB001<br>(01H)</td>
+			<td class="RegOvrCell">RB000<br>(00H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH07<br>(87H)</td>
+			<td colspan=2 class="RegOvrCell">RH06<br>(86H)</td>
+			<td colspan=2 class="RegOvrCell">RH05<br>(85H)</td>
+			<td colspan=2 class="RegOvrCell">RH04<br>(84H)</td>
+			<td colspan=2 class="RegOvrCell">RH03<br>(83H)</td>
+			<td colspan=2 class="RegOvrCell">RH02<br>(82H)</td>
+			<td colspan=2 class="RegOvrCell">RH01<br>(81H)</td>
+			<td colspan=2 class="RegOvrCell">RH00<br>(80H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW03<br>(C3H)</td>
+			<td colspan=4 class="RegOvrCell">RW02<br>(C2H)</td>
+			<td colspan=4 class="RegOvrCell">RW01<br>(C1H)</td>
+			<td colspan=4 class="RegOvrCell">RW00<br>(C0H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD01<br>(E1H)</td>
+			<td colspan=8 class="RegOvrCell">RD00<br>(E0H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ0<br>(F0H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB031<br>(1FH)</td>
+			<td class="RegOvrCell">RB030<br>(1EH)</td>
+			<td class="RegOvrCell">RB029<br>(1DH)</td>
+			<td class="RegOvrCell">RB028<br>(1CH)</td>
+			<td class="RegOvrCell">RB026<br>(1AH)</td>
+			<td class="RegOvrCell">RB027<br>(1BH)</td>
+			<td class="RegOvrCell">RB025<br>(19H)</td>
+			<td class="RegOvrCell">RB024<br>(18H)</td>
+			<td class="RegOvrCell">RB023<br>(17H)</td>
+			<td class="RegOvrCell">RB022<br>(16H)</td>
+			<td class="RegOvrCell">RB021<br>(15H)</td>
+			<td class="RegOvrCell">RB020<br>(14H)</td>
+			<td class="RegOvrCell">RB019<br>(13H)</td>
+			<td class="RegOvrCell">RB018<br>(12H)</td>
+			<td class="RegOvrCell">RB017<br>(11H)</td>
+			<td class="RegOvrCell">RB016<br>(10H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH15<br>(8FH)</td>
+			<td colspan=2 class="RegOvrCell">RH14<br>(8EH)</td>
+			<td colspan=2 class="RegOvrCell">RH13<br>(8DH)</td>
+			<td colspan=2 class="RegOvrCell">RH12<br>(8CH)</td>
+			<td colspan=2 class="RegOvrCell">RH11<br>(8BH)</td>
+			<td colspan=2 class="RegOvrCell">RH10<br>(8AH)</td>
+			<td colspan=2 class="RegOvrCell">RH09<br>(89H)</td>
+			<td colspan=2 class="RegOvrCell">RH08<br>(88H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW07<br>(C7H)</td>
+			<td colspan=4 class="RegOvrCell">RW06<br>(C6H)</td>
+			<td colspan=4 class="RegOvrCell">RW05<br>(C5H)</td>
+			<td colspan=4 class="RegOvrCell">RW04<br>(C4H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD03<br>(E3H)</td>
+			<td colspan=8 class="RegOvrCell">RD02<br>(E2H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ1<br>(F1H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB047<br>(2FH)</td>
+			<td class="RegOvrCell">RB046<br>(2EH)</td>
+			<td class="RegOvrCell">RB045<br>(2DH)</td>
+			<td class="RegOvrCell">RB044<br>(2CH)</td>
+			<td class="RegOvrCell">RB042<br>(2AH)</td>
+			<td class="RegOvrCell">RB043<br>(2BH)</td>
+			<td class="RegOvrCell">RB041<br>(29H)</td>
+			<td class="RegOvrCell">RB040<br>(28H)</td>
+			<td class="RegOvrCell">RB039<br>(27H)</td>
+			<td class="RegOvrCell">RB038<br>(26H)</td>
+			<td class="RegOvrCell">RB037<br>(25H)</td>
+			<td class="RegOvrCell">RB036<br>(24H)</td>
+			<td class="RegOvrCell">RB035<br>(23H)</td>
+			<td class="RegOvrCell">RB034<br>(22H)</td>
+			<td class="RegOvrCell">RB033<br>(21H)</td>
+			<td class="RegOvrCell">RB032<br>(20H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH23<br>(97H)</td>
+			<td colspan=2 class="RegOvrCell">RH22<br>(96H)</td>
+			<td colspan=2 class="RegOvrCell">RH21<br>(95H)</td>
+			<td colspan=2 class="RegOvrCell">RH20<br>(94H)</td>
+			<td colspan=2 class="RegOvrCell">RH19<br>(93H)</td>
+			<td colspan=2 class="RegOvrCell">RH18<br>(92H)</td>
+			<td colspan=2 class="RegOvrCell">RH17<br>(91H)</td>
+			<td colspan=2 class="RegOvrCell">RH16<br>(90H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW11<br>(CBH)</td>
+			<td colspan=4 class="RegOvrCell">RW10<br>(CAH)</td>
+			<td colspan=4 class="RegOvrCell">RW09<br>(C9H)</td>
+			<td colspan=4 class="RegOvrCell">RW08<br>(C8H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD05<br>(E5H)</td>
+			<td colspan=8 class="RegOvrCell">RD04<br>(E4H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ2<br>(F2H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB063<br>(3FH)</td>
+			<td class="RegOvrCell">RB062<br>(3EH)</td>
+			<td class="RegOvrCell">RB061<br>(3DH)</td>
+			<td class="RegOvrCell">RB060<br>(3CH)</td>
+			<td class="RegOvrCell">RB058<br>(3AH)</td>
+			<td class="RegOvrCell">RB059<br>(3BH)</td>
+			<td class="RegOvrCell">RB057<br>(39H)</td>
+			<td class="RegOvrCell">RB056<br>(38H)</td>
+			<td class="RegOvrCell">RB055<br>(37H)</td>
+			<td class="RegOvrCell">RB054<br>(36H)</td>
+			<td class="RegOvrCell">RB053<br>(35H)</td>
+			<td class="RegOvrCell">RB052<br>(34H)</td>
+			<td class="RegOvrCell">RB051<br>(33H)</td>
+			<td class="RegOvrCell">RB050<br>(32H)</td>
+			<td class="RegOvrCell">RB049<br>(31H)</td>
+			<td class="RegOvrCell">RB048<br>(30H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH31<br>(9FH)</td>
+			<td colspan=2 class="RegOvrCell">RH30<br>(9EH)</td>
+			<td colspan=2 class="RegOvrCell">RH29<br>(9DH)</td>
+			<td colspan=2 class="RegOvrCell">RH28<br>(9CH)</td>
+			<td colspan=2 class="RegOvrCell">RH27<br>(9BH)</td>
+			<td colspan=2 class="RegOvrCell">RH26<br>(9AH)</td>
+			<td colspan=2 class="RegOvrCell">RH25<br>(99H)</td>
+			<td colspan=2 class="RegOvrCell">RH24<br>(98H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW15<br>(CFH)</td>
+			<td colspan=4 class="RegOvrCell">RW14<br>(CEH)</td>
+			<td colspan=4 class="RegOvrCell">RW13<br>(CDH)</td>
+			<td colspan=4 class="RegOvrCell">RW12<br>(CCH)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD07<br>(E7H)</td>
+			<td colspan=8 class="RegOvrCell">RD06<br>(E6H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ3<br>(F3H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB079<br>(4FH)</td>
+			<td class="RegOvrCell">RB078<br>(4EH)</td>
+			<td class="RegOvrCell">RB077<br>(4DH)</td>
+			<td class="RegOvrCell">RB076<br>(4CH)</td>
+			<td class="RegOvrCell">RB074<br>(4AH)</td>
+			<td class="RegOvrCell">RB075<br>(4BH)</td>
+			<td class="RegOvrCell">RB073<br>(49H)</td>
+			<td class="RegOvrCell">RB072<br>(48H)</td>
+			<td class="RegOvrCell">RB071<br>(47H)</td>
+			<td class="RegOvrCell">RB070<br>(46H)</td>
+			<td class="RegOvrCell">RB069<br>(45H)</td>
+			<td class="RegOvrCell">RB068<br>(44H)</td>
+			<td class="RegOvrCell">RB067<br>(43H)</td>
+			<td class="RegOvrCell">RB066<br>(42H)</td>
+			<td class="RegOvrCell">RB065<br>(41H)</td>
+			<td class="RegOvrCell">RB064<br>(40H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH39<br>(A7H)</td>
+			<td colspan=2 class="RegOvrCell">RH38<br>(A6H)</td>
+			<td colspan=2 class="RegOvrCell">RH37<br>(A5H)</td>
+			<td colspan=2 class="RegOvrCell">RH36<br>(A4H)</td>
+			<td colspan=2 class="RegOvrCell">RH35<br>(A3H)</td>
+			<td colspan=2 class="RegOvrCell">RH34<br>(A2H)</td>
+			<td colspan=2 class="RegOvrCell">RH33<br>(A1H)</td>
+			<td colspan=2 class="RegOvrCell">RH32<br>(A0H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW19<br>(D3H)</td>
+			<td colspan=4 class="RegOvrCell">RW18<br>(D2H)</td>
+			<td colspan=4 class="RegOvrCell">RW17<br>(D1H)</td>
+			<td colspan=4 class="RegOvrCell">RW16<br>(D0H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD09<br>(E9H)</td>
+			<td colspan=8 class="RegOvrCell">RD08<br>(E8H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ4<br>(F4H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB095<br>(5FH)</td>
+			<td class="RegOvrCell">RB094<br>(5EH)</td>
+			<td class="RegOvrCell">RB093<br>(5DH)</td>
+			<td class="RegOvrCell">RB092<br>(5CH)</td>
+			<td class="RegOvrCell">RB090<br>(5AH)</td>
+			<td class="RegOvrCell">RB091<br>(5BH)</td>
+			<td class="RegOvrCell">RB089<br>(59H)</td>
+			<td class="RegOvrCell">RB088<br>(58H)</td>
+			<td class="RegOvrCell">RB087<br>(57H)</td>
+			<td class="RegOvrCell">RB086<br>(56H)</td>
+			<td class="RegOvrCell">RB085<br>(55H)</td>
+			<td class="RegOvrCell">RB084<br>(54H)</td>
+			<td class="RegOvrCell">RB083<br>(53H)</td>
+			<td class="RegOvrCell">RB082<br>(52H)</td>
+			<td class="RegOvrCell">RB081<br>(51H)</td>
+			<td class="RegOvrCell">RB080<br>(50H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH47<br>(AFH)</td>
+			<td colspan=2 class="RegOvrCell">RH46<br>(AEH)</td>
+			<td colspan=2 class="RegOvrCell">RH45<br>(ADH)</td>
+			<td colspan=2 class="RegOvrCell">RH44<br>(ACH)</td>
+			<td colspan=2 class="RegOvrCell">RH43<br>(ABH)</td>
+			<td colspan=2 class="RegOvrCell">RH42<br>(AAH)</td>
+			<td colspan=2 class="RegOvrCell">RH41<br>(A9H)</td>
+			<td colspan=2 class="RegOvrCell">RH40<br>(A8H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW23<br>(D7H)</td>
+			<td colspan=4 class="RegOvrCell">RW22<br>(D6H)</td>
+			<td colspan=4 class="RegOvrCell">RW21<br>(D5H)</td>
+			<td colspan=4 class="RegOvrCell">RW20<br>(D4H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD11<br>(EBH)</td>
+			<td colspan=8 class="RegOvrCell">RD10<br>(EAH)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ5<br>(F5H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB111<br>(6FH)</td>
+			<td class="RegOvrCell">RB110<br>(6EH)</td>
+			<td class="RegOvrCell">RB109<br>(6DH)</td>
+			<td class="RegOvrCell">RB108<br>(6CH)</td>
+			<td class="RegOvrCell">RB106<br>(6AH)</td>
+			<td class="RegOvrCell">RB107<br>(6BH)</td>
+			<td class="RegOvrCell">RB105<br>(69H)</td>
+			<td class="RegOvrCell">RB104<br>(68H)</td>
+			<td class="RegOvrCell">RB103<br>(67H)</td>
+			<td class="RegOvrCell">RB102<br>(66H)</td>
+			<td class="RegOvrCell">RB101<br>(65H)</td>
+			<td class="RegOvrCell">RB100<br>(64H)</td>
+			<td class="RegOvrCell">RB099<br>(63H)</td>
+			<td class="RegOvrCell">RB098<br>(62H)</td>
+			<td class="RegOvrCell">RB097<br>(61H)</td>
+			<td class="RegOvrCell">RB096<br>(60H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH55<br>(B7H)</td>
+			<td colspan=2 class="RegOvrCell">RH54<br>(B6H)</td>
+			<td colspan=2 class="RegOvrCell">RH53<br>(B5H)</td>
+			<td colspan=2 class="RegOvrCell">RH52<br>(B4H)</td>
+			<td colspan=2 class="RegOvrCell">RH51<br>(B3H)</td>
+			<td colspan=2 class="RegOvrCell">RH50<br>(B2H)</td>
+			<td colspan=2 class="RegOvrCell">RH49<br>(B1H)</td>
+			<td colspan=2 class="RegOvrCell">RH48<br>(B0H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW27<br>(DBH)</td>
+			<td colspan=4 class="RegOvrCell">RW26<br>(DAH)</td>
+			<td colspan=4 class="RegOvrCell">RW25<br>(D9H)</td>
+			<td colspan=4 class="RegOvrCell">RW24<br>(D8H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD13<br>(EDH)</td>
+			<td colspan=8 class="RegOvrCell">RD12<br>(ECH)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ6<br>(F6H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<table class="RegOvrTable">
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>0</u>bbbbbbb</td>
+			<td class="RegOvrCell">Byte<br/>(8-bit)</td>
+			<td class="RegOvrCell">RB127<br>(7FH)</td>
+			<td class="RegOvrCell">RB126<br>(7EH)</td>
+			<td class="RegOvrCell">RB125<br>(7DH)</td>
+			<td class="RegOvrCell">RB124<br>(7CH)</td>
+			<td class="RegOvrCell">RB122<br>(7AH)</td>
+			<td class="RegOvrCell">RB123<br>(7BH)</td>
+			<td class="RegOvrCell">RB121<br>(79H)</td>
+			<td class="RegOvrCell">RB120<br>(78H)</td>
+			<td class="RegOvrCell">RB119<br>(77H)</td>
+			<td class="RegOvrCell">RB118<br>(76H)</td>
+			<td class="RegOvrCell">RB117<br>(75H)</td>
+			<td class="RegOvrCell">RB116<br>(74H)</td>
+			<td class="RegOvrCell">RB115<br>(73H)</td>
+			<td class="RegOvrCell">RB114<br>(72H)</td>
+			<td class="RegOvrCell">RB113<br>(71H)</td>
+			<td class="RegOvrCell">RB112<br>(70H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>10</u>hhhhhh</td>
+			<td class="RegOvrCell">Half-Word<br/>(16-bit)</td>
+			<td colspan=2 class="RegOvrCell">RH63<br>(BFH)</td>
+			<td colspan=2 class="RegOvrCell">RH62<br>(BEH)</td>
+			<td colspan=2 class="RegOvrCell">RH61<br>(BDH)</td>
+			<td colspan=2 class="RegOvrCell">RH60<br>(BCH)</td>
+			<td colspan=2 class="RegOvrCell">RH59<br>(BBH)</td>
+			<td colspan=2 class="RegOvrCell">RH58<br>(BAH)</td>
+			<td colspan=2 class="RegOvrCell">RH57<br>(B9H)</td>
+			<td colspan=2 class="RegOvrCell">RH56<br>(B8H)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>110</u>wwwww</td>
+			<td class="RegOvrCell">Word<br/>(32-bit)</td>
+			<td colspan=4 class="RegOvrCell">RW31<br>(DFH)</td>
+			<td colspan=4 class="RegOvrCell">RW30<br>(DEH)</td>
+			<td colspan=4 class="RegOvrCell">RW29<br>(DDH)</td>
+			<td colspan=4 class="RegOvrCell">RW28<br>(DCH)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>1110</u>dddd</td>
+			<td class="RegOvrCell">Double-Word<br/>(64-bit)</td>
+			<td colspan=8 class="RegOvrCell">RD15<br>(EFH)</td>
+			<td colspan=8 class="RegOvrCell">RD14<br>(EEH)</td>
+		</tr>
+		<tr class="RegOvrRow">
+            <td class="RegOvrCell"><u>11110</u>qqq</td>
+			<td class="RegOvrCell">Quad-Word<br/>(128-bit)</td>
+			<td colspan=16 class="RegOvrCell">RQ7<br>(F7H)</td>
+		</tr>
+	</table>
+    <p></p>
+	<h2>Flags</h2>
+	<p>The following table lists the bits in the Flags register:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+
+		<tr><td colspan=16>&nbsp;</td></tr>
+		<tr><td colspan=16>Z - Zero: set when computation results in a zero value.</td></tr>
+		<tr><td colspan=16>P - Positive: set when computation results in a positive (non-negative, non-zero) value.</td></tr>
+		<tr><td colspan=16>N - Negative: set when computation results in a negative (non-positive, non-zero) value.</td></tr>
+		<tr><td colspan=16>C - Carry: set when a computation causes a carry or requires a borrow.</td></tr>
+		<tr><td colspan=16>V - Overflow: set when a computation results in an overflow.</td></tr>
+		<tr><td colspan=16>IE - Slow Interrupt Enable: allows slow interrupts to be handled.</td></tr>
+		<tr><td colspan=16>FE - Fast Interrupt Enable: allows fast interrupts to be handled.</td></tr>
+		<tr><td colspan=16>GE - Graphics Interrupt Enable: allows graphics interrupts to be handled.</td></tr>
+		<tr><td colspan=16>SE - Software Interrupt Enable: allows software interrupts to be handled.</td></tr>
+		<tr><td colspan=16>HE - Hardware Breakpoint Interrupt Enable: allows hardware breakpoint interrupts to be handled.</td></tr>
+		<tr><td colspan=16>IP - Slow Interrupt Pending: indicates that a slow interrupt needs to be handled.</td></tr>
+		<tr><td colspan=16>FP - Fast Interrupt Pending: indicates that a fast interrupt needs to be handled.</td></tr>
+		<tr><td colspan=16>GP - Graphics Interrupt Pending: indicates that a graphics interrupt needs to be handled.</td></tr>
+		<tr><td colspan=16>NP - Non-Maskable Interrupt Pending: indicates that a non-maskable interrupt needs to be handled.</td></tr>
+	</table>
+	<h2>Stack Pointer</h2>
+	<p>The stack pointer (SP) register is a double-word (32-bit) register containing the memory address
+	of the top of the stack, meaning that it points to the 16-bit value most recently pushed onto the stack.
+	The following table shows how the stack is arranged. N is the number of half-words on the stack.</p>
+	<table>
+		<tr>
+			<td><u>Memory Address</u></td>
+			<td><u>Data</u></td>
+			<td><u>Stack Term</u></td>
+		</tr>
+		<tr>
+			<td>Highest</td>
+			<td>(don't care)</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>...</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>SP + N * 2</td>
+			<td>(don't care)</td>
+			<td>Stack base</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>Oldest stack element (first pushed; last to be popped)</td>
+			<td>Stack bottom</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>... stack element</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>SP + 4</td>
+			<td>... stack element</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>SP + 2</td>
+			<td>... stack element</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>SP</td>
+			<td>Newest stack element (last pushed; first to be popped)</td>
+			<td>Stack top</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>(don't care)</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+			<td>...</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td>Lowest</td>
+			<td>(don't care)</td>
+			<td>&nbsp;</td>
+		</tr>
+	</table>
+	<h2>Program Counter</h2>
+	<p>The program counter (PC) is a 32-bit register containing the memory address
+	of the next instruction to be executed. This is a byte-oriented address, since
+	the lengths of instructions can vary from one (1) to five (5) bytes.</p>
+	<p>Upon CPU reset, the PC register contains a value of TBD, which is
+	the address of the 64KB ROM startup code. This code is physically contained
+	in the block memory of the FPGA, and is initialized during FPGA reset, from
+	constant data found in the FPGA bitstream. For more information, refer to the
+	<a href="startup.html">System Startup</a> page.</p>
+	<h2>Hardware Breakpoints</h2>
+	<p>The CPU supports up to four (4) hardware breakpoints. Each Breakpoint Address (BA0..BA3)
+	register contains a 32-bit memory address of the instruction where that specific
+	breakpoint should occur, if program execution reaches the given code location.
+	If a breakpoint register contains zero, that breakpoint is disabled. If a breakpoint
+	register contains a non-zero address, that breakpoint is enabled. Note that for any
+	of the breakpoints to function, the harware breakpoint interrupt enable bit (HE) must
+	be set (equal to 1) in the Flags register.</p>
+	<p>The register selector values for the breakpoint address registers are TBD..TBD.
+	With these selectors, certain instructions may be used to modify the registers.</p>
+	<h2>VHDL Code</h2>
+	<p>The following portions of code may be used to define and to access the registers in VHDL.</p>
+	<pre>
+    TBD
+	</pre>
+	<h2>SystemVerilog Code</h2>
+	<p>The following portions of code may be used to define and to access the registers in SystemVerilog.</p>
+	<pre>
+    TBD
+	</pre>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

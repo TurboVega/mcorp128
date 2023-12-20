@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="clr.html">CLR</a></td></tr>
+	<tr><td><a href="dec.html">DEC</a></td></tr>
+	<tr><td><a href="fill.html">FILL</a></td></tr>
+	<tr><td><a href="inc.html">INC</a></td></tr>
+	<tr><td><a href="inv.html">INV</a></td></tr>
+	<tr><td><a href="neg.html">NEG</a></td></tr>
+	<tr><td><a href="oxt.html">OXT</a></td></tr>
+	<tr><td><a href="sxt.html">SXT</a></td></tr>
+	<tr><td><a href="rev.html">REV</a></td></tr>
+	<tr><td><a href="zxt.html">ZXT</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>One Extend (OXT) Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction extends (widens) one register by one-filling another register,
+	resulting in a value twice the width (in bits) of either register.</p>
+	<p>The selected register represents the destination register, which must be at least 16 bits wide.
+	In the register overlays, there are two adjacent registers, each half the width of the destination register,
+	that together (concatenated) form the value of the destination register.
+	A negative one (-1) value is used to fill the higher of those two registers, overwriting any prior value.</p>
+	<p>Looking at the <a href="registers.html">Register Set</a> table,
+	both the source register and the extension register would appear directly
+	above the selected register in the table.
+	The extension register would be to the left of the source register, in the table.
+	The combined value, below those two, would be in the selected destination register.</p>
+	<p>For example, if 'RH00' is selected,
+	then -1 is used to fill 'RB001', effectively extending 'RB000'.
+	The combined result would be in 'RH00'. Thus, referencing 'RH00' in a subsequent
+	instruction would use the one-extended version of 'RB000'.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">oxt Rd</td>
+			<td class="InstDtlCell">66H rdsel</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>extsel ← (rdsel « 1) ˅ 1</td></tr>
+					<tr><td>temp ← -1</td></tr>
+					<tr><td>Re ← temp</td></tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	<p>In this instruction, 'rdsel' selects the destination register.</p>
+	<p>'extsel' selects the half-width extension register, shown as 'Re'.</p>
+	<p>Computation of 'extsel' is done using only 8 bits, ignoring any carry bit.
+    There is no overflow, because 'RBxxx' cannot be the destination register.</p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">0</td>
+			<td class="FlagDtlCell">0</td>
+			<td class="FlagDtlCell">1</td>
+			<td class="FlagDtlCell">0</td>
+			<td class="FlagDtlCell">0</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

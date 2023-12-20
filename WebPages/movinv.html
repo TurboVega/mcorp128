@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="ld.html">LD</a></td></tr>
+	<tr><td><a href="ldinv.html">LDINV</a></td></tr>
+	<tr><td><a href="ldneg.html">LDNEG</a></td></tr>
+	<tr><td><a href="lea.html">LEA</a></td></tr>
+	<tr><td><a href="mov.html">MOV</a></td></tr>
+	<tr><td><a href="movinv.html">MOVINV</a></td></tr>
+	<tr><td><a href="movneg.html">MOVNEG</a></td></tr>
+	<tr><td><a href="sto.html">STO</a></td></tr>
+	<tr><td><a href="stoinv.html">STOINV</a></td></tr>
+	<tr><td><a href="stoneg.html">STONEG</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>Move Inverse (MOVINV) Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction moves inverted (one's-complement) data into a register from various sources.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">movinv Rd,#val</td>
+			<td class="InstDtlCell">9AH rdsel val</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>Rd ← ¬ val</td></tr>
+				</table>
+			</td>
+			<td class="InstDtlCell">Value is 8-bits wide.</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">movinv Rd,#val</td>
+			<td class="InstDtlCell">BAH rdsel val{7:0} val{15:8}</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>Rd ← ¬ val</td></tr>
+				</table>
+			</td>
+			<td class="InstDtlCell">Value is 16-bits wide.</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">movinv Rd,Rs</td>
+			<td class="InstDtlCell">DAH rdsel rssel</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>Rd ← ¬ Rs</td></tr>
+				</table>
+			</td>
+			<td class="InstDtlCell">&nbsp;</td>
+		</tr>
+	</table>
+	<p>In this instruction, 'rdsel' selects the destination register.</p>
+    <p>'rssel' selects the source register.</p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>

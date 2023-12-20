@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="inststyle.css">
+</head>
+<body>
+<table>
+<tr>
+<td class="NavigationPane">
+<table>
+	<tr><td><a href="instlist.html">Full Instruction List</a></td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr class="NavigationPaneGroup"><td>Related Instructions:</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td><a href="decu.html">DECU</a></td></tr>
+	<tr><td><a href="encu.html">ENCU</a></td></tr>
+</table>
+</td>
+<td class="InstDtlPane">
+	<h1>Decode Unicode (DECU) Instruction</h1>
+	<h2>Purpose</h2>
+	<p>This instruction decodes a Unicode character in UTF-8 format, converting it to
+    a 23-bit character code (plus one upper zero bit). The source register
+    may contain from 1 to 4 encoded bytes, depending on how the original 23-bit character code
+    was encoded. The output will cover 5 adjacent byte registers, as follows:</p>
+    <ul>
+        <li>Register 0: character code bits 7:0</li>
+        <li>Register 1: character code bits 15:8</li>
+        <li>Register 2: character code bits 22:16 (bit #23 is cleared)</li>
+        <li>Register 3: zero (0)</li>
+        <li>Register 4: # of bytes in UTF-8 character</li>
+    </ul>
+    <p>For the destination register, it is recommended to specify a register whose overlayed
+    <i>byte</i> register index is evenly divisble by 4 (e.g., 'RB008', 'RH04', 'RW02').
+    After this instruction, you can treat the lowest 4 registers as
+    a single 32-bit value, using the proper word-register overlay.
+    For example, if the destination register is 'RW02',
+    then you can use 'RW02' to reference the output Unicode character code.
+    The byte count will be in 'RB012', in this case.
+    Obviously, specifying any double-word or quad-word register will work, since they
+    have at least 5 bytes in them.</p>
+	<h2>Usage</h2>
+	<p>The following formats are supported for this instruction:</p>
+	<table class="InstDtlTable">
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">Format</td>
+			<td class="InstDtlCell">Encoding</td>
+			<td class="InstDtlCell">Operation</td>
+			<td class="InstDtlCell">Notes</td>
+		</tr>
+		<tr class="InstDtlRow">
+			<td class="InstDtlCell">decu Rd,Rs</td>
+			<td class="InstDtlCell">D6H rdsel rssel</td>
+			<td class="InstDtlCell">
+				<table>
+					<tr><td>1-Byte decoding:</td></tr>
+					<tr><td>Rs is 0xxxxxxx</td></tr>
+					<tr><td>Rd+3:Rd ← 00000000 00000000 00000000 0xxxxxxx</td></tr>
+					<tr><td>Rd+4 ← 1</td></tr>
+					<tr><td>&nbsp;</td></tr>
+					<tr><td>2-Byte decoding:</td></tr>
+					<tr><td>Rs is 110xxxxx</td></tr>
+					<tr><td>Rs+1 is 10yyyyyy</td></tr>
+					<tr><td>Rd+3:Rd ← 00000000 00000000 00000yyy yyyxxxxx</td></tr>
+					<tr><td>Rd+4 ← 2</td></tr>
+					<tr><td>&nbsp;</td></tr>
+					<tr><td>3-Byte decoding:</td></tr>
+					<tr><td>Rs is 1110xxxx</td></tr>
+					<tr><td>Rs+1 is 10yyyyyy</td></tr>
+					<tr><td>Rs+2 is 10zzzzzz</td></tr>
+					<tr><td>Rd+3:Rd ← 00000000 00000000 zzzzzzyy yyyyxxxx</td></tr>
+					<tr><td>Rd+4 ← 3</td></tr>
+					<tr><td>&nbsp;</td></tr>
+					<tr><td>4-Byte decoding:</td></tr>
+					<tr><td>Rs is 11110xxx</td></tr>
+					<tr><td>Rs+1 is 10yyyyyy</td></tr>
+					<tr><td>Rs+2 is 10zzzzzz</td></tr>
+					<tr><td>Rs+3 is 10wwwwww</td></tr>
+					<tr><td>Rd+3:Rd ← 00000000 000wwwww wzzzzzzy yyyyyxxx</td></tr>
+					<tr><td>Rd+4 ← 4</td></tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	<p>In this instruction, 'rdsel' selects the destination register.</p>
+	<p>'rssel' selects the source register.</p>
+	<h2>Flags</h2>
+	<p>The following flags are involved in this instruction:</p>
+	<table class="FlagDtlTable">
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">15</td>
+			<td class="FlagDtlCell">14</td>
+			<td class="FlagDtlCell">13</td>
+			<td class="FlagDtlCell">12</td>
+			<td class="FlagDtlCell">11</td>
+			<td class="FlagDtlCell">10</td>
+			<td class="FlagDtlCell">09</td>
+			<td class="FlagDtlCell">08</td>
+			<td class="FlagDtlCell">07</td>
+			<td class="FlagDtlCell">06</td>
+			<td class="FlagDtlCell">05</td>
+			<td class="FlagDtlCell">04</td>
+			<td class="FlagDtlCell">03</td>
+			<td class="FlagDtlCell">02</td>
+			<td class="FlagDtlCell">01</td>
+			<td class="FlagDtlCell">00</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">NP</td>
+			<td class="FlagDtlCell">GP</td>
+			<td class="FlagDtlCell">FP</td>
+			<td class="FlagDtlCell">IP</td>
+			<td class="FlagDtlCell">HE</td>
+			<td class="FlagDtlCell">SE</td>
+			<td class="FlagDtlCell">GE</td>
+			<td class="FlagDtlCell">FE</td>
+			<td class="FlagDtlCell">IE</td>
+			<td class="FlagDtlCell">V</td>
+			<td class="FlagDtlCell">C</td>
+			<td class="FlagDtlCell">N</td>
+			<td class="FlagDtlCell">P</td>
+			<td class="FlagDtlCell">Z</td>
+		</tr>
+		<tr class="FlagDtlRow">
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+			<td class="FlagDtlCell">-</td>
+		</tr>
+	</table>
+	<p>Legend: 0 = cleared, 1 = set, ? = tested, * = updated, '-' = n/a</p>
+	<p></p>
+</td>
+</tr>
+</table>
+<iframe src="copyright.html" seamless></iframe>
+</body>
+</html>
