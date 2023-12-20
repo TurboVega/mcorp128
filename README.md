@@ -1,6 +1,9 @@
 # mcorp128
 My Custom Overlayed-Register Processor
 
+A CPU with 128 bytes of internal registers that are overlayed for access as
+8, 16, 32, 64, and 128 bit values.
+
 This repo holds documents that I wrote years ago when toying with the long-time idea 
 of designing my own CPU. I am not an electrical engineer or computer engineer, but
 I have a long history of programming various CPUs, especially 8, 16, and 32 bit ones.
